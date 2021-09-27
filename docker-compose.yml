@@ -1,0 +1,41 @@
+version:  '3.8'
+services:
+    mariadb:
+        image: linuxserver/mariadb
+        restart: unless-stopped
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            TZ: ${TZ}
+            LOCAL_USER: ${LOCAL_USER}
+        volumes:
+            - ./data:/config
+        ports:
+            - 3306:3306
+    php-fpm:
+        build:
+            context: ./build/php
+        user: ${LOCAL_USER}
+        restart: unless-stopped
+        environment:
+            - APP_ENV=${APP_ENV}
+            - APP_SECRET=${APP_SECRET}
+            - DATABASE_URL=${DATABASE_URL}
+        volumes:
+            - ${APP_FOLDER}:/var/www
+        depends_on:
+            -   mariadb
+    nginx:
+        build:
+            context: ./build/nginx
+        restart: unless-stopped
+        volumes:
+            - ${APP_FOLDER}:/var/www
+            - ./build/nginx/nginx.conf:/etc/nginx/nginx.conf
+            - ./build/nginx/sites/:/etc/nginx/sites-available
+            - ./build/nginx/conf.d/:/etc/nginx/conf.d
+            - ./logs:/var/logs
+        depends_on:
+            -   php-fpm
+        ports:
+            - ${NGINX_PORT}:80
+

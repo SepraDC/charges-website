@@ -1,0 +1,9 @@
+App\Entity\Charge:
+  charge_{1..20}:
+    name: <text(10)>
+    amount: <randomFloat(2,10,100)>
+    state: <boolean()>
+    bank: "@bank_<numberBetween(1,2)>"
+    chargeType: "@chargeType_<numberBetween(1,5)>"
+    date: <dateTime()>
+    user: "@user_admin"

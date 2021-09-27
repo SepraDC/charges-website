@@ -1,0 +1,103 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ currentBank.name }}{% endblock %}
+{% block link %}{% endblock %}
+{% block logo %}<img class="img-fluid" src="{{ asset('images/logo'~currentBank.abbreviation~'.png') }}" alt="">{% endblock %}
+{% block navigation %}
+    {% for bank in banks %}
+        <li class="nav-item {{ (currentBank.abbreviation == bank.abbreviation)?'active':'' }}">
+            <a class="nav-link"
+               href="{{ path('charges_by_abbreviations', {'abb': bank.abbreviation}) }}">{{ bank.name }} <span
+                        class="sr-only">(current)</span></a>
+        </li>
+    {% endfor %}
+    <li class="nav-item">
+        <a href="{{ path('charges_create') }}" class="nav-link"><span><img width="19px" src="{{ asset('images/add.svg') }}" alt=""></span> Ajouter un prélevement</a>
+    </li>
+
+{% endblock %}
+{% block body %}
+    <div class="container">
+        <h1>{{ 'charge.charges'|trans }}</h1>
+        <table class="table table-hover text-center">
+            <thead class="thead-light">
+            <tr>
+                <th scope="col">{{ 'charge.name'|trans }}</th>
+                <th scope="col">{{ 'charge.amount'|trans }}</th>
+                <th scope="col">{{ 'charge.state'|trans }}</th>
+                <th scope="col" colspan="2">{{ 'charge.actions'|trans }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% set somme = 0 %}
+            {% set reste = 0 %}
+            {% for charge in charges %}
+                {% set somme = somme + charge.amount %}
+                {% if charge.state == false %}
+                    {% set reste = reste + charge.amount %}
+                {% endif %}
+                <tr>
+                    <th>{{ charge.name }}</th>
+                    <td>{{ charge.amount }} €</td>
+                    <td>
+                        <button id="{{ charge.id }}" value="{{ charge.id }}" class="prelLink btn btn-light">
+                            <img width="46px"
+                                 src="{{ (charge.state == true) ? asset('images/validate.svg') : asset('images/unvalidate.svg') }}"
+                                 alt=""></button>
+                    </td>
+                    <td>
+                        <a class="btn btn-warning" href="{{ path('charges_edit', {'id': charge.id }) }}"
+                           title="Modifier"><img height="32px" src="{{ asset('images/edit.svg') }}" alt=""></a>
+                        <a class="btn btn-danger" href="{{ path('charges_delete', {'id': charge.id }) }}"
+                           title="Supprimer"><img height="32px" src="{{ asset('images/delete.svg') }}" alt=""></a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot>
+            <tr>
+                <th>Reste à Payer</th>
+                <th><span id="reste">{{ reste }}</span> €</th>
+                <th>
+                    <a class="btn btn-light" href="{{ path('charges_reset_state') }}">
+                        <img width="46px" src="{{ asset('images/reload.svg') }}" alt="">
+                    </a>
+                </th>
+                <th></th>
+            </tr>
+            <tr class="thead-light">
+                <th>Total</th>
+                <th> {{ somme }} €</th>
+                <th colspan="2"></th>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("button.prelLink").click(function () {
+                var button = $(this);
+                $('#loading').toggle();
+                $.ajax({
+                    url: "{{ path('charges_change_state') }}",
+                    method: "post",
+                    data: {id: $(this).val(), reste: $('#reste').text()},
+                    async: true,
+
+                    success: function (data, status) {
+                        if (!data['state']) {
+                            button.html("<img height='46px' src='{{ asset('images/unvalidate.svg') }}' alt=''>")
+                        } else {
+                            button.html("<img height='46px' src='{{ asset('images/validate.svg') }}' alt=''>")
+                        }
+                        $('#reste').text(data['reste']);
+                        $('#loading').toggle();
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        alert('Ajax request failed.');
+                    }
+                })
+            })
+        })
+    </script>
+{% endblock %}

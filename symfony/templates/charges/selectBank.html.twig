@@ -1,0 +1,7 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+{% for bank in banks %}
+    <a class="btn btn-primary" href="{{ path('charges_by_abbreviations', {'abb': bank.abbreviation}) }}">{{ bank.name }}</a>
+{% endfor %}
+{% endblock %}

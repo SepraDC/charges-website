@@ -1,0 +1,8 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="container d-flex flex-row">
+        <a class="p-5 m-3 bg-primary text-white rounded" href="{{ path('admin_users') }}">{{ 'user.class'|trans }}</a>
+        <a class="p-5 m-3 bg-success text-white rounded" href="{{ path('admin_banks') }}">{{ 'bank.class'|trans }}</a>
+        <a class="p-5 m-3 bg-warning text-white rounded" href="{{ path('admin_charge_types') }}">{{ 'charge_type.class'|trans }}</a>
+    </div>
+{% endblock %}

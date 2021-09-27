@@ -1,0 +1,45 @@
+admin:
+  user:
+    existing_users: "Utilisateurs existants"
+    add_user: "Ajouter un utilisateur"
+  bank:
+    existing_banks: "Banques existantes"
+    add_bank: "Ajouter une banque"
+  charge_type:
+    existing_charge_types: "Types existants"
+    add_charge_type: "Ajouter une Type de prélèvement"
+
+user:
+  class: "Utilisateur"
+  username: "Identifiant"
+
+bank:
+  class: "Banque"
+  name: "Nom"
+  abbreviation: "Abréviation"
+
+charge:
+  class: "Prélèvement"
+  name: "Nom"
+  bank: "Banque"
+  amount: "Coût"
+  date: "Date"
+  state: "Etat"
+  charge_type: "Type de prélèvement"
+  actions: "Actions"
+  charges: "Prélèvements"
+
+charge_type:
+  class: "Type de prélèvement"
+  name: "Nom"
+
+form:
+  save: "Enregistrer"
+  add: "ajouter"
+  delete: "Supprimer"
+  placeholder:
+    name: "nom"
+    amount: "100.00 €"
+    abbreviation: "Abréviation"
+
+

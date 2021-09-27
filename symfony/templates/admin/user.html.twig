@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{controller_name}}{% endblock %}
+{% block navigation %}
+    <li class="nav-item">
+        <a href="{{ path('admin_index') }}" class="nav-link">Retour</a>
+    </li>
+    <li class="nav-item">
+        <a href="{{ path('admin_users') }}" class="nav-link active">Utilisateurs</a>
+    </li>
+    <li class="nav-item">
+        <a href="{{ path('admin_banks') }}" class="nav-link">Banques</a>
+    </li>
+    <li class="nav-item">
+        <a href="{{ path('admin_charge_types') }}" class="nav-link">Types Prelevements</a>
+    </li>
+{% endblock %}
+{% block body %}
+    <div class="container pt-4">
+        <h1>{{ "admin.user.existing_users"|trans }}</h1>
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Nom</th>
+                <th scope="col">Roles</th>
+                <th scope="col">Supprimer</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for user in users %}
+                <tr>
+                    <th scope="row">{{ user.id }}</th>
+                    <td>{{ user.username }}</td>
+                    <td>
+                        <ul>
+                            {% for role in user.roles %}
+                                <li>{{ role }}</li>
+                            {% endfor %}
+                        </ul>
+
+                    </td>
+                    <td>
+                        <form action="{{ path('admin_users_delete') }}" method="post">
+                            <button type="submit" class="btn btn-light" name="username" value="{{ user.username }}">
+                                <img height="26px" src="{{ asset('images/delete.svg') }}" alt="">
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <h1>{{ "admin.user.add_user"|trans }}</h1>
+        {{ form_start(form) }}
+        <div class="form-row">
+            <div class="col">{{ form_row(form.roles) }}</div>
+            <div class="col">{{ form_row(form.username) }}</div>
+        </div>
+        <div class="form-row">
+            <div class="col">{{ form_row(form.plainPassword.first) }}</div>
+            <div class="col">{{ form_row(form.plainPassword.second) }}</div>
+        </div>
+        <button class="btn btn-primary" type="submit">Ajouter</button>
+        {{ form_end(form) }}
+    </div>
+
+
+
+
+
+{% endblock %}

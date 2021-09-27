@@ -1,0 +1,3 @@
+App\Entity\ChargeType:
+  chargeType_{1..5}:
+    name: <text(10)>

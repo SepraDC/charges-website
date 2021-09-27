@@ -1,0 +1,4 @@
+App\Entity\Bank:
+  bank_{1..2}:
+    name: <company()>
+    abbreviation: <currencyCode()>
