@@ -1,4 +1,6 @@
 admin:
+  return: "Retour"
+  sharp: "#"
   user:
     existing_users: "Utilisateurs existants"
     add_user: "Ajouter un utilisateur"
@@ -12,6 +14,14 @@ admin:
 user:
   class: "Utilisateur"
   username: "Identifiant"
+  name: "Nom"
+  roles: "Roles"
+  form:
+    roles:
+      admin: "Administrateur"
+      user: "Utilisateur"
+    password: "Mot de passe"
+    repeat_password: "Répéter le mot de passe"
 
 bank:
   class: "Banque"
@@ -28,6 +38,7 @@ charge:
   charge_type: "Type de prélèvement"
   actions: "Actions"
   charges: "Prélèvements"
+  add: "Ajouter un prélèvement"
 
 charge_type:
   class: "Type de prélèvement"
@@ -35,11 +46,22 @@ charge_type:
 
 form:
   save: "Enregistrer"
-  add: "ajouter"
+  add: "Ajouter"
   delete: "Supprimer"
   placeholder:
     name: "nom"
     amount: "100.00 €"
     abbreviation: "Abréviation"
 
-
+login:
+  title: "Se connecter"
+  logged_in: "Vous êtes connecté en tant que %user%"
+  form:
+    username:
+      label: "Utilisateur"
+      placeholder: "prénom"
+    password:
+      label: "Mot de passe"
+      placeholder: "******"
+    remember_me: "Se souvenir de moi"
+  submit_button: "Connexion"

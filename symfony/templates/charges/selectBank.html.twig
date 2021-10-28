@@ -1,7 +1,18 @@
 {% extends 'base.html.twig' %}
-
+{% block navigation %}
+    <a href="{{ path('charges_create') }}" class="nav-link"><span><img width="19px" src="{{ asset('images/add.svg') }}" alt="">{{ 'charge.add'|trans }}</a>
+{% endblock %}
 {% block body %}
+<div class="container my-4">
+    <div class="d-flex justify-content-center flex-wrap">
 {% for bank in banks %}
-    <a class="btn btn-primary" href="{{ path('charges_by_abbreviations', {'abb': bank.abbreviation}) }}">{{ bank.name }}</a>
+    <a class="card text-white bg-secondary m-3" style="max-width: 18rem;" href="{{ path('charges_by_abbreviations', {'abb': bank.abbreviation}) }}">
+        <div class="card-header">{{ bank.name }}</div>
+        <div class="card-body">
+            <img class="img-fluid" src="{{ asset('images/logo'~bank.abbreviation~'.png') }}" alt=""/>
+        </div>
+    </a>
 {% endfor %}
+    </div>
+</div>
 {% endblock %}

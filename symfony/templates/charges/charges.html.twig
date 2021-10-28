@@ -3,15 +3,20 @@
 {% block link %}{% endblock %}
 {% block logo %}<img class="img-fluid" src="{{ asset('images/logo'~currentBank.abbreviation~'.png') }}" alt="">{% endblock %}
 {% block navigation %}
+    <div class="dropdown show">
+    <a class="btn btn-light dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Changer de banque
+    </a>
+
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
     {% for bank in banks %}
-        <li class="nav-item {{ (currentBank.abbreviation == bank.abbreviation)?'active':'' }}">
-            <a class="nav-link"
-               href="{{ path('charges_by_abbreviations', {'abb': bank.abbreviation}) }}">{{ bank.name }} <span
-                        class="sr-only">(current)</span></a>
-        </li>
+        <a class="dropdown-item" href="{{ path('charges_by_abbreviations', {'abb': bank.abbreviation}) }}">{{ bank.name }}</a>
     {% endfor %}
+    </div>
+    </div>
+
     <li class="nav-item">
-        <a href="{{ path('charges_create') }}" class="nav-link"><span><img width="19px" src="{{ asset('images/add.svg') }}" alt=""></span> Ajouter un prélevement</a>
+        <a href="{{ path('charges_create') }}" class="nav-link"><img width="19px" src="{{ asset('images/add.svg') }}" alt="">{{'charge.add'|trans}}</a>
     </li>
 
 {% endblock %}
@@ -84,7 +89,7 @@
                     data: {id: $(this).val(), reste: $('#reste').text()},
                     async: true,
 
-                    success: function (data, status) {
+                    success: function (data) {
                         if (!data['state']) {
                             button.html("<img height='46px' src='{{ asset('images/unvalidate.svg') }}' alt=''>")
                         } else {

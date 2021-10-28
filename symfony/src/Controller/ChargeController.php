@@ -120,7 +120,7 @@ class ChargeController extends AbstractController
                 $reste += $charge->getAmount();
 
             return new JsonResponse(array(
-                'state' => $charge->getAmount(),
+                'state' => $charge->getState(),
                 'reste' => $reste
             ));
         }

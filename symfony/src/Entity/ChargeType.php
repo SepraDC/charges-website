@@ -22,10 +22,10 @@ class ChargeType
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $name;
+    private ?string $name;
 
     /**
-     * @ORM\OneToMany(targetEntity=Charge::class, mappedBy="ChargeType", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=Charge::class, mappedBy="chargeType", orphanRemoval=true)
      */
     private $charges;
 

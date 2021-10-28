@@ -1,4 +1,9 @@
 {% extends 'base.html.twig' %}
+{% block navigation %}
+    <li class="nav-item">
+        <a href="{{ path('charges_index') }}" class="nav-link">Retour</a>
+    </li>
+{% endblock %}
 {% block body %}
     <div class="container d-flex flex-row">
         <a class="p-5 m-3 bg-primary text-white rounded" href="{{ path('admin_users') }}">{{ 'user.class'|trans }}</a>

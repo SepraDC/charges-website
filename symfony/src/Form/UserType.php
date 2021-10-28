@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\User;
+use Doctrine\DBAL\Types\TextType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -15,18 +16,21 @@ class UserType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('username')
+            ->add('username', \Symfony\Component\Form\Extension\Core\Type\TextType::class, array(
+                'label' => 'user.username'
+            ))
             ->add('roles', ChoiceType::class, array(
+                'label' => 'user.roles',
                 'mapped'=>false,
                 'choices'=> [
-                    'Admin'=> 'ROLE_ADMIN',
-                    'User'=> 'ROLE_USER'
+                    'user.form.roles.admin'=> 'ROLE_ADMIN',
+                    'user.form.roles.user'=> 'ROLE_USER'
                 ]
             ))
             ->add('plainPassword', RepeatedType::class, array(
                 'type' => PasswordType::class,
-                'first_options'=> array('label' => 'Mot de passe'),
-                'second_options'=>array('label' => 'Répeter mot de passe')
+                'first_options'=> array('label' => 'user.form.password'),
+                'second_options'=>array('label' => 'user.form.repeat_password')
             ))
         ;
     }
