@@ -2,9 +2,19 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\ChargeRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
+#[ApiResource(
+    collectionOperations: ['get' => ['normalization_context' => ['groups' => 'charge:list']]],
+    itemOperations: [
+        'get' => ['normalization_context' => ['groups' => 'charge:item']],
+    ],
+    order: ['name' => 'ASC'],
+    paginationEnabled: false,
+)]
 #[ORM\Entity(repositoryClass: ChargeRepository::class)]
 class Charge
 {
@@ -14,26 +24,33 @@ class Charge
     private ?int $id;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['charge:list', 'charge:item'])]
     private ?string $name;
 
     #[ORM\Column(type: 'decimal', precision: 5, scale: 2)]
+    #[Groups(['charge:list', 'charge:item'])]
     private ?float $amount;
 
     #[ORM\Column(type: 'boolean')]
+    #[Groups(['charge:list', 'charge:item'])]
     private bool $state;
 
     #[ORM\ManyToOne(targetEntity: Bank::class, inversedBy: 'charges')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['charge:list', 'charge:item'])]
     private ?Bank $bank;
 
     #[ORM\ManyToOne(targetEntity: ChargeType::class, inversedBy: 'charges')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Groups(['charge:list', 'charge:item'])]
     private ?ChargeType $chargeType;
 
     #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups(['charge:list', 'charge:item'])]
     private ?\DateTimeInterface $date;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'charges')]
+    #[Groups(['charge:list', 'charge:item'])]
     private ?User $user;
 
 

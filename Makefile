@@ -17,7 +17,7 @@ setup-ssl: ## Setup SSL post-install
 	@make instruct-ssl
 
 generate-ssl: ## Generate the SSL certificate and CA
-	docker run --rm -v $(CWD)docker/caddy/certs:/root/.local/share/mkcert goodeggs/mkcert -cert-file /root/.local/share/mkcert/local-cert.pem -key-file /root/.local/share/mkcert/local-key.pem "idea.local" "*.idea.local"
+	docker run --rm -v $(CWD)docker/caddy/certs:/root/.local/share/mkcert goodeggs/mkcert -cert-file /root/.local/share/mkcert/local-cert.pem -key-file /root/.local/share/mkcert/local-key.pem "sepradc.local" "*.sepradc.local"
 	openssl x509 -in docker/caddy/certs/rootCA.pem -inform PEM -out docker/caddy/certs/rootCA.crt
 
 instruct-ssl: ## Tell users to RTFM
@@ -36,8 +36,8 @@ migrations: ## Run migrations
 fixtures: ## Run fixtures
 	docker exec -it charge-website-php-fpm-1 bash -c "php bin/console hautelook:fixtures:load --purge-with-truncate -n"
 
-api: ## Enter php container
-	docker-compose exec api sh
+php: ## Enter php container
+	docker compose exec api sh
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[Route('/charges', name: 'charges')]
+#[Route('/charges_front', name: 'charges')]
 class ChargeController extends AbstractController
 {
     public function __construct(private BankRepository   $bankRepository,

@@ -2,24 +2,35 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\ChargeTypeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
+#[ApiResource(
+    collectionOperations: ['get' => ['normalization_context' => ['groups' => 'chargeType:list']]],
+    itemOperations: ['get' => ['normalization_context' => ['groups' => 'chargeType:item']]],
+    order: ['name' => 'ASC'],
+    paginationEnabled: false,
+)]
 #[ORM\Entity(repositoryClass: ChargeTypeRepository::class)]
 class ChargeType
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private int $id;
+    #[Groups(["chargeType:list", "chargeType:item"])]
+    private ?int $id;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(["chargeType:list", "chargeType:item"])]
     private ?string $name;
 
-    #[ORM\OneToMany(targetEntity: Charge::class, mappedBy: 'chargeType', orphanRemoval: true)]
-    private ArrayCollection $charges;
+    #[ORM\OneToMany(mappedBy: 'chargeType', targetEntity: Charge::class, orphanRemoval: true)]
+    #[Groups(['chargeType:item'])]
+    private Collection $charges;
 
     public function __construct()
     {

@@ -11,7 +11,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ApiResource(
     collectionOperations: ['get' => ['normalization_context' => ['groups' => 'bank:list']]],
-    itemOperations: ['get' => ['normalization_context' => ['groups' => 'bank:item']]],
+    itemOperations: [
+        'get' => ['normalization_context' => ['groups' => 'bank:item']],
+    ],
     order: ['name' => 'ASC'],
     paginationEnabled: false,
 )]
@@ -21,7 +23,7 @@ class Bank
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private int $id;
+    private ?int $id;
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups(['bank:list', 'bank:item'])]
