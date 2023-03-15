@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use App\Controller\CreateChargeController;
 use App\Repository\ChargeRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -10,7 +11,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     collectionOperations: ['get' => ['normalization_context' => ['groups' => 'charge:list']]],
     itemOperations: [
+        'post_charge' => ['method' =>'POST', 'controller' => CreateChargeController::class],
         'get' => ['normalization_context' => ['groups' => 'charge:item']],
+        'put',
+        'delete'
     ],
     order: ['name' => 'ASC'],
     paginationEnabled: false,
