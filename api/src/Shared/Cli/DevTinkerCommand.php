@@ -28,10 +28,9 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 class DevTinkerCommand extends Command
 {
     public function __construct(
-        private ParameterBagInterface $parameterBag,
-        private ManagerRegistry $registry,
-        private EntityManagerInterface $em,
-        private ContainerInterface $container,
+        private readonly ParameterBagInterface $parameterBag,
+        private readonly ManagerRegistry $registry,
+        private readonly EntityManagerInterface $em,
     ) {
         parent::__construct();
     }
@@ -59,7 +58,6 @@ class DevTinkerCommand extends Command
                 ['$I', 'Codeception\'s DataFactory-like object'],
                 ['$fm', 'FactoryMuffin instance'],
                 ['$em', 'EntityManager instance'],
-                ['$container', 'Container instance'],
                 ['$faker', 'Faker Generator instance'],
             ]
         );
@@ -79,10 +77,9 @@ class DevTinkerCommand extends Command
         $shell->setScopeVariables([
             'fm' => $factoryMuffin,
             'em' => $this->em,
-            'container' => $this->container,
             'faker' => Factory::create(),
             'I' => new class($factoryMuffin) {
-                public function __construct(private FactoryMuffin $fm)
+                public function __construct(private readonly FactoryMuffin $fm)
                 {
                 }
 
@@ -106,7 +103,7 @@ class DevTinkerCommand extends Command
         return Command::SUCCESS;
     }
 
-    public function isEnabled()
+    public function isEnabled(): bool
     {
         return $this->parameterBag->get('kernel.debug');
     }

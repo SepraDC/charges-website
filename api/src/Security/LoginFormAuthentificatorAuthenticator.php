@@ -20,16 +20,16 @@ class LoginFormAuthentificatorAuthenticator extends AbstractLoginFormAuthenticat
 {
     use TargetPathTrait;
 
-    public const LOGIN_ROUTE = 'app_login';
+    final public const LOGIN_ROUTE = 'app_login';
 
-    private UrlGeneratorInterface $urlGenerator;
+    private readonly UrlGeneratorInterface $urlGenerator;
 
     public function __construct(UrlGeneratorInterface $urlGenerator)
     {
         $this->urlGenerator = $urlGenerator;
     }
 
-    public function authenticate(Request $request): PassportInterface
+    public function authenticate(Request $request): \Symfony\Component\Security\Http\Authenticator\Passport\Passport
     {
         $username = $request->request->get('username', '');
 

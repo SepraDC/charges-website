@@ -2,19 +2,24 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Controller\CreateChargeController;
 use App\Repository\ChargeRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ApiResource(
-    collectionOperations: ['get' => ['normalization_context' => ['groups' => 'charge:list']]],
-    itemOperations: [
-        'post_charge' => ['method' =>'POST', 'controller' => CreateChargeController::class],
-        'get' => ['normalization_context' => ['groups' => 'charge:item']],
-        'put',
-        'delete'
+    operations: [
+        new GetCollection(),
+        new Get(),
+        new Post(),
+        new Put(),
+        new Delete()
     ],
     order: ['name' => 'ASC'],
     paginationEnabled: false,

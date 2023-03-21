@@ -15,7 +15,7 @@ class UserPasswordSubscriber implements \Doctrine\Common\EventSubscriber
     /**
      * UserPasswordSubscriber constructor.
      */
-    public function __construct(private UserPasswordHasherInterface $passwordHasher)
+    public function __construct(private readonly UserPasswordHasherInterface $passwordHasher)
     {
     }
 

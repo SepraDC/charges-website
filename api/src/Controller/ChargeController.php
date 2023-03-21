@@ -18,9 +18,10 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 #[Route('/charges_front', name: 'charges')]
 class ChargeController extends AbstractController
 {
-    public function __construct(private BankRepository   $bankRepository,
-                                private ChargeRepository $chargeRepository,
-    private EntityManagerInterface $entityManager)
+    public function __construct(private readonly BankRepository   $bankRepository,
+                                private readonly ChargeRepository $chargeRepository,
+    private readonly EntityManagerInterface $entityManager,
+    private readonly \Doctrine\Persistence\ManagerRegistry $managerRegistry)
     {
     }
 
@@ -103,7 +104,7 @@ class ChargeController extends AbstractController
             $id =$req->get('id');
             $reste = $req->get('reste');
 
-            $em = $this->getDoctrine()->getManager();
+            $em = $this->managerRegistry->getManager();
             $charge = $this->chargeRepository->find($id);
 
             if (!$charge instanceof \App\Entity\Charge) {

@@ -22,10 +22,10 @@ use Symfony\Component\Routing\Annotation\Route;
 class AdminController extends AbstractController
 {
     public function __construct(
-        private BankRepository         $bankRepository,
-        private UserRepository         $userRepository,
-        private ChargeTypeRepository   $chargeTypeRepository,
-        private EntityManagerInterface $entityManager
+        private readonly BankRepository         $bankRepository,
+        private readonly UserRepository         $userRepository,
+        private readonly ChargeTypeRepository   $chargeTypeRepository,
+        private readonly EntityManagerInterface $entityManager
     )
     {
     }

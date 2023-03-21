@@ -11,7 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class UserOperationsController extends AbstractController
 {
 
-    public function __construct(private EntityManagerInterface $em, private ChargeRepository $chargeRepository, private UserRepository $userRepository)
+    public function __construct(private readonly EntityManagerInterface $em, private readonly ChargeRepository $chargeRepository, private readonly UserRepository $userRepository)
     {
     }
 

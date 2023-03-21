@@ -2,7 +2,12 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\BankRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -10,12 +15,20 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ApiResource(
-    collectionOperations: ['get' => ['normalization_context' => ['groups' => 'bank:list']]],
-    itemOperations: [
-        'get' => ['normalization_context' => ['groups' => 'bank:item']],
+    operations: [
+        new Post(security: "is_granted('ROLE_ADMIN')"),
+        new Get(normalizationContext: ['groups' => 'user:readBankItem']),
+        new GetCollection(normalizationContext: ['groups' => 'user:readBankList'])
     ],
     order: ['name' => 'ASC'],
     paginationEnabled: false,
+)]
+#[ApiResource(
+    uriTemplate: '/bank/{bankId}/charges',
+    operations: [new GetCollection()],
+    uriVariables: [
+        'bankId' => new Link(toProperty: 'charges', fromClass: Charge::class)
+    ]
 )]
 #[ORM\Entity(repositoryClass: BankRepository::class)]
 class Bank
@@ -23,10 +36,11 @@ class Bank
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['user:readBankItem', 'user:readBankList'])]
     private ?int $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['bank:list', 'bank:item'])]
+    #[Groups(['user:readBankList', 'user:readBankItem'])]
     private ?string $name;
 
     #[ORM\OneToMany(mappedBy: 'bank', targetEntity: Charge::class, orphanRemoval: true)]
@@ -34,7 +48,7 @@ class Bank
     private Collection $charges;
 
     #[ORM\Column(type: 'string', length: 3)]
-    #[Groups(['bank:list', 'bank:item'])]
+    #[Groups(['user:readBankList', 'user:readBankItem'])]
     private ?string $abbreviation;
 
     public function __construct()

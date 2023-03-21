@@ -1,4 +1,4 @@
-FROM php:8.0.8-fpm-alpine3.13 AS php
+FROM php:8.1.17-fpm-alpine3.17 AS php
 
 # persistent / runtime deps
 RUN apk add --no-cache \
@@ -12,8 +12,8 @@ RUN apk add --no-cache \
         ffmpeg \
     ;
 
-ARG APCU_VERSION=5.1.18
-ARG XDEBUG_VERSION=3.0.2
+ARG APCU_VERSION=5.1.22
+ARG XDEBUG_VERSION=3.2
 RUN set -eux; \
 	apk add --no-cache --virtual .build-deps \
 	    $PHPIZE_DEPS \
@@ -68,7 +68,7 @@ RUN set -eux; \
 	apk del .build-deps
 
 # Composer
-COPY --from=composer:2.3.5 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2.5.4 /usr/bin/composer /usr/bin/composer
 #
 # Configuration
 #

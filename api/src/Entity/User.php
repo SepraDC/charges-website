@@ -2,8 +2,9 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use App\Controller\UserOperationsController;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -15,15 +16,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource(
-    collectionOperations: ['get' => ['normalization_context' => ['groups' => 'user:list']]],
-    itemOperations: [
-        'get' => ['normalization_context' => ['groups' => 'user:item']],
-        'get_charges' => [
-            'normalization_context' => ['groups' => 'user:charges'],
-            'method' => 'GET',
-            'controller' => UserOperationsController::class,
-            'path' => "/users/{id}/charges"
-        ]
+    operations: [
+        new Get(),
+        new GetCollection()
     ],
     order: ['name' => 'ASC'],
     paginationEnabled: false,
