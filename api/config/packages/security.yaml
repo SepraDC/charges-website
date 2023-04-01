@@ -19,7 +19,13 @@ security:
         main:
             lazy: true
             provider: app_user_provider
-            custom_authenticator: App\Security\LoginFormAuthentificatorAuthenticator
+            json_login:
+                check_path: auth
+                username_path: username
+                password_path: password
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+            jwt: ~
             logout:
                 path: app_logout
                 # where to redirect after logout
@@ -38,8 +44,10 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-         - { path: ^/admin, roles: ROLE_ADMIN }
+         - { path: ^/$, roles: PUBLIC_ACCESS }
+         - { path: ^/admin, roles: PUBLIC_ACCESS }
          - { path: ^/docs, roles: ROLE_ADMIN }
-         - { path: ^/charges, roles: ROLE_USER }
+         - { path: ^/charges_front, roles: ROLE_USER }
          - { path: ^/login, roles: PUBLIC_ACCESS }
+         - { path: ^/auth, roles: PUBLIC_ACCESS }
          - { path: ^/, roles: IS_AUTHENTICATED_FULLY }

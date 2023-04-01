@@ -20,16 +20,14 @@ class ChargeRepository extends ServiceEntityRepository
         parent::__construct($registry, Charge::class);
     }
 
-    public function findByUser($value)
+    public function findByUser($userId)
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.user = :val')
-            ->setParameter('val', $value)
-            ->orderBy('c.id', 'ASC')
-            ->setMaxResults(10)
+            ->andWhere('c.user = :userId')
+            ->setParameter('userId', $userId)
+            ->orderBy('c.date', 'ASC')
             ->getQuery()
-            ->getResult()
-            ;
+            ->getResult();
     }
 
     // /**

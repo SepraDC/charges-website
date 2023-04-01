@@ -13,8 +13,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ApiResource(
     operations: [
-        new Get(),
-        new GetCollection()
+        new Get(normalizationContext: ['groups' => 'user:readChargeTypeItem']),
+        new GetCollection(normalizationContext: ['groups' => 'user:readChargeTypeList'])
     ],
     order: ['name' => 'ASC'],
     paginationEnabled: false,
@@ -25,15 +25,14 @@ class ChargeType
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["chargeType:list", "chargeType:item"])]
+    #[Groups(["user:readChargeTypeList", "user:readChargeTypeItem"])]
     private ?int $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["chargeType:list", "chargeType:item"])]
+    #[Groups(["user:readChargeTypeList", "user:readChargeTypeItem"])]
     private ?string $name;
 
     #[ORM\OneToMany(mappedBy: 'chargeType', targetEntity: Charge::class, orphanRemoval: true)]
-    #[Groups(['chargeType:item'])]
     private Collection $charges;
 
     public function __construct()

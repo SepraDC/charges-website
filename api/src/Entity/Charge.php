@@ -2,28 +2,32 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use App\Controller\CreateChargeController;
 use App\Repository\ChargeRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 
 #[ApiResource(
     operations: [
-        new GetCollection(),
-        new Get(),
+        new GetCollection(normalizationContext: ['groups' =>"user:chargeList"], security: "is_granted('ROLE_USER')"),
+        new Get(normalizationContext: ['groups' =>"user:chargeItem"], security: "is_granted('ROLE_USER') and object.user == user"),
         new Post(),
-        new Put(),
-        new Delete()
+        new Put(security: "is_granted('ROLE_USER') and object.user == user"),
+        new Patch(security: "is_granted('ROLE_USER') and object.user == user" ),
+        new Delete(security: "is_granted('ROLE_USER') and object.user == user")
     ],
     order: ['name' => 'ASC'],
     paginationEnabled: false,
 )]
+#[ApiFilter(SearchFilter::class, properties: ["bank.id" => "exact"])]
 #[ORM\Entity(repositoryClass: ChargeRepository::class)]
 class Charge
 {
@@ -33,34 +37,33 @@ class Charge
     private ?int $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['charge:list', 'charge:item'])]
+    #[Groups(['user:chargeList', 'user:chargeItem'])]
     private ?string $name;
 
     #[ORM\Column(type: 'decimal', precision: 5, scale: 2)]
-    #[Groups(['charge:list', 'charge:item'])]
+    #[Groups(['user:chargeList', 'user:chargeItem'])]
     private ?float $amount;
 
     #[ORM\Column(type: 'boolean')]
-    #[Groups(['charge:list', 'charge:item'])]
+    #[Groups(['user:chargeList', 'user:chargeItem'])]
     private bool $state;
 
     #[ORM\ManyToOne(targetEntity: Bank::class, inversedBy: 'charges')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['charge:list', 'charge:item'])]
+    #[Groups(['user:chargeList', 'user:chargeItem'])]
     private ?Bank $bank;
 
     #[ORM\ManyToOne(targetEntity: ChargeType::class, inversedBy: 'charges')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    #[Groups(['charge:list', 'charge:item'])]
+    #[Groups(['user:chargeList', 'user:chargeItem'])]
     private ?ChargeType $chargeType;
 
     #[ORM\Column(type: 'date', nullable: true)]
-    #[Groups(['charge:list', 'charge:item'])]
+    #[Groups(['user:chargeList', 'user:chargeItem'])]
     private ?\DateTimeInterface $date;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'charges')]
-    #[Groups(['charge:list', 'charge:item'])]
-    private ?User $user;
+    public ?User $user;
 
 
     public function getId(): ?int
@@ -80,12 +83,12 @@ class Charge
         return $this;
     }
 
-    public function getAmount(): ?string
+    public function getAmount(): ?float
     {
         return $this->amount;
     }
 
-    public function setAmount(string $amount): self
+    public function setAmount(float $amount): self
     {
         $this->amount = $amount;
 

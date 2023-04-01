@@ -20,7 +20,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Get(),
         new GetCollection()
     ],
-    order: ['name' => 'ASC'],
+    order: ['username' => 'ASC'],
     paginationEnabled: false,
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface

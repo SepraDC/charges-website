@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Extension;
+namespace App\Doctrine;
 
 use ApiPlatform\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Doctrine\Orm\Extension\QueryItemExtensionInterface;
@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\Security;
 
 class CurrentUserExtension implements QueryCollectionExtensionInterface, QueryItemExtensionInterface
 {
-    public function __construct(private Security $security)
+    public function __construct(private readonly Security $security)
     {
     }
 
@@ -28,7 +28,7 @@ class CurrentUserExtension implements QueryCollectionExtensionInterface, QueryIt
 
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
-        if (Charge::class !== $resourceClass || $this->security->isGranted('ROLE_ADMIN') || null === $user = $this->security->getUser()) {
+        if (Charge::class !== $resourceClass || null === $user = $this->security->getUser()) {
             return;
         }
 
