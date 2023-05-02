@@ -3,8 +3,11 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\ChargeTypeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -13,8 +16,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ApiResource(
     operations: [
+        new Post(security: "is_granted('ROLE_ADMIN')"),
+        new Put(security: "is_granted('ROLE_ADMIN')"),
         new Get(normalizationContext: ['groups' => 'user:readChargeTypeItem']),
-        new GetCollection(normalizationContext: ['groups' => 'user:readChargeTypeList'])
+        new GetCollection(normalizationContext: ['groups' => 'user:readChargeTypeList']),
+        new Delete(security: "is_granted('ROLE_ADMIN')")
     ],
     order: ['name' => 'ASC'],
     paginationEnabled: false,
