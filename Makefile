@@ -36,8 +36,13 @@ migrations: ## Run migrations
 fixtures: ## Run fixtures
 	docker exec -it charge-website-php-fpm-1 bash -c "php bin/console hautelook:fixtures:load --purge-with-truncate -n"
 
-php: ## Enter php container
-	docker compose exec api sh
+.PHONY: api
+api: ## Enter php container
+	docker-compose exec -u app api sh -l
+
+.PHONY: front
+front: ## Shell into the front container
+	docker compose exec -u node front sh
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

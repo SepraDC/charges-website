@@ -16,6 +16,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
+use App\State\UserVerifyProvider;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource(
@@ -24,7 +25,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new GetCollection(normalizationContext: ['groups' => 'user:readUserList']),
         new Post(normalizationContext: ['groups' => 'user:readUserItem'], security: 'is_granted("ROLE_ADMIN")', input: UserCreateDto::class),
         new Put(normalizationContext: ['groups' => 'user:readUserItem'], security: 'is_granted("ROLE_ADMIN")'),
-        new Delete(security: 'is_granted("ROLE_ADMIN")')
+        new Delete(security: 'is_granted("ROLE_ADMIN")'),
+        new Get(uriTemplate: "/verify", provider: UserVerifyProvider::class )
     ],
     order: ['username' => 'ASC'],
     paginationEnabled: false,
@@ -67,6 +69,12 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function setId(?int $id): self
+    {
+        $this->id = $id;
+        return $this;
     }
 
 

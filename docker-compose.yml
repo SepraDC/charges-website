@@ -53,6 +53,15 @@ services:
             - 3306:3306
         cap_add:
             - SYS_NICE
+    front:
+        build:
+            target: base
+            context: .
+            dockerfile: docker/front/Dockerfile
+        ports:
+            - "24678:24678"
+        volumes:
+            - ./front:/srv/app
 volumes:
     mysql_database:
     caddy_data:
