@@ -30,18 +30,18 @@ up: ## Start project
 down: ## Stop project
 	docker compose down --remove-orphans
 
-migrations: ## Run migrations
-	docker exec -it charge-website-php-fpm-1 bash -c "php bin/console doctrine:migrations:migrate"
-
-fixtures: ## Run fixtures
-	docker exec -it charge-website-php-fpm-1 bash -c "php bin/console hautelook:fixtures:load --purge-with-truncate -n"
-
 .PHONY: api
 api: ## Enter php container
 	docker-compose exec -u app api sh -l
 
+migrations: ## Run migrations
+	docker exec -u app -it charge-website-php-fpm-1 bash -c "php bin/console doctrine:migrations:migrate"
+
+fixtures: ## Run fixtures
+	docker exec -u app -it charge-website-php-fpm-1 bash -c "php bin/console hautelook:fixtures:load --purge-with-truncate -n"
+
 .PHONY: front
-front: ## Shell into the front container
+front: ## Enter front container
 	docker compose exec -u node front sh
 
 help:

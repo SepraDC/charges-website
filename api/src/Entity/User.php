@@ -26,7 +26,7 @@ use App\State\UserVerifyProvider;
         new Post(normalizationContext: ['groups' => 'user:readUserItem'], security: 'is_granted("ROLE_ADMIN")', input: UserCreateDto::class),
         new Put(normalizationContext: ['groups' => 'user:readUserItem'], security: 'is_granted("ROLE_ADMIN")'),
         new Delete(security: 'is_granted("ROLE_ADMIN")'),
-        new Get(uriTemplate: "/verify", provider: UserVerifyProvider::class )
+        new Get(uriTemplate: "/verify", provider: UserVerifyProvider::class, normalizationContext: ['groups' => 'user:verify'] )
     ],
     order: ['username' => 'ASC'],
     paginationEnabled: false,
@@ -36,15 +36,15 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['user:readUserItem', 'user:readUserList'])]
+    #[Groups(['user:readUserItem', 'user:readUserList', 'user:verify'])]
     private ?int $id;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
-    #[Groups(['user:readUserItem', 'user:readUserList'])]
+    #[Groups(['user:readUserItem', 'user:readUserList', 'user:verify'])]
     private string $username;
 
     #[ORM\Column(type: 'json')]
-    #[Groups(['user:readUserItem', 'user:readUserList'])]
+    #[Groups(['user:readUserItem', 'user:readUserList', 'user:verify'])]
     private array $roles = [];
 
     /**
@@ -59,6 +59,7 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $plainPassword;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Charge::class)]
+    #[Groups(['user:verify'])]
     private Collection $charges;
 
     public function __construct()
