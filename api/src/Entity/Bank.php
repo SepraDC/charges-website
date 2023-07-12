@@ -9,12 +9,20 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
+use App\Controller\BanksByUserController;
 use App\Repository\BankRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
+#[ApiResource(
+    uriTemplate: '/banks/user',
+    operations: [new GetCollection(controller: BanksByUserController::class, normalizationContext: ['groups' => 'user:readBankList'])],
+)]
 #[ApiResource(
     operations: [
         new Post(security: "is_granted('ROLE_ADMIN')"),
@@ -26,24 +34,18 @@ use Symfony\Component\Serializer\Annotation\Groups;
     order: ['name' => 'ASC'],
     paginationEnabled: false,
 )]
-#[ApiResource(
-    uriTemplate: '/bank/{bankId}/charges',
-    operations: [new GetCollection()],
-    uriVariables: [
-        'bankId' => new Link(toProperty: 'charges', fromClass: Charge::class)
-    ]
-)]
 #[ORM\Entity(repositoryClass: BankRepository::class)]
+#[Vich\Uploadable]
 class Bank
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['user:readBankItem', 'user:readBankList'])]
+    #[Groups(['user:readBankItem', 'user:readBankList', 'user:chargeList'])]
     private ?int $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['user:readBankList', 'user:readBankItem'])]
+    #[Groups(['user:readBankList', 'user:readBankItem', 'user:chargeList'])]
     private ?string $name;
 
     #[ORM\OneToMany(mappedBy: 'bank', targetEntity: Charge::class, orphanRemoval: true)]
@@ -53,6 +55,17 @@ class Bank
     #[ORM\Column(type: 'string', length: 3)]
     #[Groups(['user:readBankList', 'user:readBankItem'])]
     private ?string $abbreviation;
+
+    #[Vich\UploadableField(mapping: 'bank_images', fileNameProperty: 'imageName', size: 'imageSize')]
+    private ?File $imageFile = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?string $imageName = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?string $imageSize = null;
+
+
 
     public function __construct()
     {
@@ -114,5 +127,38 @@ class Bank
         $this->abbreviation = $abbreviation;
 
         return $this;
+    }
+
+    public function setImageFile(?File $imageFile = null): void
+    {
+        $this->imageFile = $imageFile;
+        if ($imageFile) {
+            $this->setImageSize($imageFile->getSize());
+        }
+    }
+
+    public function getImageFile(): ?File
+    {
+        return $this->imageFile;
+    }
+
+    public function setImageName(?string $imageName): void
+    {
+        $this->imageName = $imageName;
+    }
+
+    public function getImageName(): ?string
+    {
+        return $this->imageName;
+    }
+
+    public function setImageSize(?int $imageSize): void
+    {
+        $this->imageSize = $imageSize;
+    }
+
+    public function getImageSize(): ?int
+    {
+        return $this->imageSize;
     }
 }

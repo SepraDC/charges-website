@@ -10,7 +10,7 @@ use Symfony\Component\String\Inflector\EnglishInflector;
 
 class DtoToEntityWriter
 {
-    private EnglishInflector $inflector;
+    private readonly EnglishInflector $inflector;
 
     public function __construct()
     {
@@ -35,7 +35,7 @@ class DtoToEntityWriter
             }
 
             if ($inputDatum instanceof TranslationType && $entity instanceof TranslatableInterface) {
-                $field = str_replace('Translations', '', $name);
+                $field = str_replace('Translations', '', (string) $name);
                 foreach ((array)$inputDatum as $locale => $content) {
                     $entity->setCurrentLocale($locale);
                     // TODO: keep only else part once we remove tedious translation setters
@@ -50,7 +50,7 @@ class DtoToEntityWriter
             }
 
             if (is_array($inputDatum) && ($inputDatum[0] ?? null) instanceof FormInput) {
-                $getter = 'get'.ucfirst($name);
+                $getter = 'get'.ucfirst((string) $name);
                 $propertyAccessor = new PropertyAccessor();
                 $singular = $this->inflector->singularize($name)[0];
                 $remover = 'remove'.ucfirst($singular);

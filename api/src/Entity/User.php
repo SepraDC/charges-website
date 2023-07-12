@@ -40,7 +40,7 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
-    #[Groups(['user:readUserItem', 'user:readUserList', 'user:verify'])]
+    #[Groups(['user:readUserItem', 'user:readUserList'])]
     private string $username;
 
     #[ORM\Column(type: 'json')]
@@ -59,7 +59,6 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $plainPassword;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Charge::class)]
-    #[Groups(['user:verify'])]
     private Collection $charges;
 
     public function __construct()
@@ -91,6 +90,7 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
      *
      * @see UserInterface
      */
+    #[Groups(['user:verify'])]
     public function getUserIdentifier(): string
     {
         return (string) $this->username;

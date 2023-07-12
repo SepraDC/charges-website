@@ -35,7 +35,7 @@ class ChargeType
     private ?int $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["user:readChargeTypeList", "user:readChargeTypeItem"])]
+    #[Groups(["user:readChargeTypeList", "user:readChargeTypeItem", "user:chargeList"])]
     private ?string $name;
 
     #[ORM\OneToMany(mappedBy: 'chargeType', targetEntity: Charge::class, orphanRemoval: true)]

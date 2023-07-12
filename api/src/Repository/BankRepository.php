@@ -6,6 +6,7 @@ use App\Entity\Bank;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @method Bank|null find($id, $lockMode = null, $lockVersion = null)
@@ -53,7 +54,7 @@ class BankRepository extends ServiceEntityRepository
      * @param User $user
      * @return Bank[]|null
      */
-    public function findByUser(User $user): ?array
+    public function findByUser(UserInterface $user): ?array
     {
         return $this->createQueryBuilder('b')
             ->join('b.charges', 'c')
@@ -61,7 +62,7 @@ class BankRepository extends ServiceEntityRepository
             ->andWhere('u = :user')
             ->setParameter('user', $user)
             ->orderBy('b.name', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->groupBy('b.id')
+            ->getQuery()->getResult();
     }
 }

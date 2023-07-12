@@ -9,7 +9,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 class DtoTransformer implements DataTransformerInterface
 {
 
-    public function __construct(private ValidatorInterface $validator, private DtoToEntityWriter $dtoToEntityWriter)
+    public function __construct(private readonly ValidatorInterface $validator, private readonly DtoToEntityWriter $dtoToEntityWriter)
     {
     }
 
@@ -26,11 +26,6 @@ class DtoTransformer implements DataTransformerInterface
         if (!isset($context['input']['class'])) {
             return false;
         }
-        $isFormInput = is_a($context['input']['class'], FormInput::class, true);
-        if (!$isFormInput) {
-            return false;
-        }
-
-        return true;
+        return is_a($context['input']['class'], FormInput::class, true);
     }
 }

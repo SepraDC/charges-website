@@ -1,26 +1,24 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: [
-    "@vueuse/nuxt",
-    "@sidebase/nuxt-auth",
-    "@nuxtjs/tailwindcss",
-    "@vite-pwa/nuxt",
-  ],
-
-  auth: {
-    baseURL: "https://api.sepradc.local/",
-    provider: {
-      type: "local",
-      endpoints: {
-        signIn: { path: "/auth", method: "post" },
-        getSession: { path: "/verify", method: "get" },
+  devServer: {
+    host: "0.0.0.0",
+  },
+  vite: {
+    server: {
+      hmr: {
+        protocol: "wss",
       },
-    },
-    globalAppMiddleware: {
-      isEnabled: true,
     },
   },
   devtools: {
-    enabled: false,
+    enabled: true,
   },
+  runtimeConfig: {
+    public: {
+      API_BASE_URL: process.env.API_PUBLIC_BASE_URL,
+    },
+    API_BASE_URL: process.env.API_BASE_URL,
+  },
+
+  modules: ["@vueuse/nuxt", "@nuxtjs/tailwindcss", "@nuxt/devtools"],
 });

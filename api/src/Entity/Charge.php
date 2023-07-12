@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use App\Controller\ResetChargesController;
 use App\Repository\ChargeRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -19,10 +20,11 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
     operations: [
         new GetCollection(normalizationContext: ['groups' =>"user:chargeList"], security: "is_granted('ROLE_USER')"),
         new Get(normalizationContext: ['groups' =>"user:chargeItem"], security: "is_granted('ROLE_USER') and object.user == user"),
-        new Post(),
+        new Post(security: "is_granted('ROLE_USER')"),
         new Put(security: "is_granted('ROLE_USER') and object.user == user"),
+        new Patch(uriTemplate: '/charges/reset', controller: ResetChargesController::class, security: "is_granted('ROLE_USER')", read: false),
         new Patch(security: "is_granted('ROLE_USER') and object.user == user" ),
-        new Delete(security: "is_granted('ROLE_USER') and object.user == user")
+        new Delete(security: "is_granted('ROLE_USER') and object.user == user"),
     ],
     order: ['name' => 'ASC'],
     paginationEnabled: false,
@@ -34,6 +36,7 @@ class Charge
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['user:chargeList', 'user:chargeItem'])]
     private ?int $id;
 
     #[ORM\Column(type: 'string', length: 255)]

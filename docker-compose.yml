@@ -16,20 +16,21 @@ services:
             - target: 443
               published: 443
               protocol: udp
+            - "24678:24678"
         volumes:
-            - ./docker/caddy:/etc/caddy
-            - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+            - ./.docker/caddy:/etc/caddy
+            - ./.docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
             - ./api/public/:/var/www/public/
             - caddy_data:/data
             - caddy_config:/config
-            - ./docker/caddy/status_pages/:/usr/share/caddy/status_pages/
+            - ./.docker/caddy/status_pages/:/usr/share/caddy/status_pages/
         environment:
-                HOST: $HOST
+            HOST: ${HOST}
     api:
         build:
             context: .
             target: local
-            dockerfile: docker/api/Dockerfile
+            dockerfile: .docker/api/Dockerfile
         depends_on:
             - db
         volumes:
@@ -40,6 +41,10 @@ services:
             PHP_IDE_CONFIG: serverName=api.sepradc.local
             XDEBUG_CLIENT_HOST: ${XDEBUG_CLIENT_HOST:-127.17.0.1}
             APP_UID: ${APP_UID:-1000}
+        networks:
+            default:
+                aliases:
+                    - api.sepradc.local
     db:
         image: mariadb:10.5.5
         restart: unless-stopped
@@ -57,9 +62,9 @@ services:
         build:
             target: base
             context: .
-            dockerfile: docker/front/Dockerfile
+            dockerfile: .docker/front/Dockerfile
         ports:
-            - "24678:24678"
+            - "3000:3000"
         volumes:
             - ./front:/srv/app
 volumes:
