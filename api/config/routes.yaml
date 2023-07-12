@@ -1,0 +1,3 @@
+auth:
+  path: /auth
+  methods: ['POST']

@@ -1,0 +1,16 @@
+api_platform:
+    metadata_backward_compatibility_layer: false
+    mapping:
+        paths: ['%kernel.project_dir%/src/Entity']
+    patch_formats:
+        json: ['application/json']
+    swagger:
+        versions: [3]
+        api_keys:
+            JWT:
+                name: Authorization
+                type: header
+
+when@prod:
+    api_platform:
+        enable_swagger: false

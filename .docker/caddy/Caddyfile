@@ -1,0 +1,37 @@
+{
+    debug
+    # HTTP/3 support
+    servers {
+        protocol {
+            experimental_http3
+        }
+    }
+}
+
+
+{$HOST}:24678 {
+    @websockets {
+        header Connection Upgrade
+        header Upgrade websocket
+    }
+  
+	reverse_proxy @websockets front:24678
+}
+
+{$HOST} {
+	log
+	tls /etc/caddy/certs/local-cert.pem /etc/caddy/certs/local-key.pem
+    reverse_proxy front:3000
+}
+
+api.{$HOST}  {
+	log
+
+	tls /etc/caddy/certs/local-cert.pem /etc/caddy/certs/local-key.pem
+	route {
+		root * /var/www/public
+		encode gzip
+		reverse_proxy api:80
+		file_server
+	}
+}
