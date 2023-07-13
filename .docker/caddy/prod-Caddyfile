@@ -1,0 +1,24 @@
+{
+    # HTTP/3 support
+    servers {
+        protocol {
+            experimental_http3
+        }
+    }
+}
+
+{$HOST} {
+	log
+    reverse_proxy front:3000
+}
+
+api.{$HOST}  {
+	log
+
+	route {
+		root * /var/www/public
+		encode gzip
+		reverse_proxy api:80
+		file_server
+	}
+}

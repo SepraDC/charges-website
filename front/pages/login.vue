@@ -1,5 +1,5 @@
 <template>
-  <section class="bg-[url('~/assets/img/mountain.jpg')] bg-cover bg-center">
+  <section class="bg-[url('/img/mountain.jpg')] bg-cover bg-center">
     <div
       class="mx-auto flex h-screen flex-col items-center justify-end backdrop-blur-sm md:justify-center md:px-6 md:py-8 lg:py-0"
     >

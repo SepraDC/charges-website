@@ -8,6 +8,7 @@ RUN apk add --no-cache \
         gettext \
         git \
         jq \
+        nginx \
         supervisor \
         ffmpeg \
     ;
@@ -75,43 +76,54 @@ COPY --from=composer:2.5.4 /usr/bin/composer /usr/bin/composer
 # PHP
 ADD .docker/api/php/php.ini /usr/local/etc/php/
 ADD .docker/api/php/php-cli.ini /usr/local/etc/php/
-# supervisor
-#ADD conf/supervisor/messenger-video-upload.ini /etc/supervisor.d/messenger-video-upload.ini
 # php-fpm config
 ADD .docker/api/php/www.conf /usr/local/etc/php-fpm.d/www.conf
 
-FROM php as local
-# Nginx
-RUN apk add --no-cache nginx
-RUN apk add --no-cache graphviz
+# nginx
 ADD .docker/api/nginx/app.conf /etc/nginx/http.d/default.conf
 
+RUN set -eux; \
+	apk add --no-cache \
+        autoconf \
+        build-base \
+    ;
 WORKDIR /var/www
+CMD ["sh"]
+
+
+FROM php as local
+
+ARG XDEBUG_VERSION=3.2.1
+RUN apk add --update linux-headers; \
+	pecl install \
+	    xdebug-${XDEBUG_VERSION} \
+    ;
+
 COPY .docker/api/docker-entrypoint.sh /docker-entrypoint.sh
+RUN mkdir -p /home/app/
+COPY .docker/api/.profile /home/app/.profile
 ENTRYPOINT ["/docker-entrypoint.sh"]
 EXPOSE 80
-RUN echo 'alias sydebug="php -dxdebug.mode=debug -dxdebug.discover_client_host=true -dxdebug.client_port=9000 -dxdebug.client_host=$XDEBUG_CLIENT_HOST bin/console"' >>/etc/profile.d/aliases.sh
-RUN echo 'alias ccdebug="php -dxdebug.mode=debug -dxdebug.discover_client_host=true -dxdebug.client_port=9000 -dxdebug.client_host=$XDEBUG_CLIENT_HOST vendor/bin/codecept"' >>/etc/profile.d/aliases.sh
 
 ##
 # Final build
 ##
-FROM local as deployed
+FROM php as final
 
 ARG VERSION
 
-COPY --chown=1000:1000 api /var/www
-COPY --chown=1000:1000 api/.env /var/www/.env
+COPY .docker/api/docker-entrypoint.sh /docker-entrypoint.sh
+ENTRYPOINT ["/docker-entrypoint.sh"]
+EXPOSE 80
 
+COPY api /var/www
 RUN  mkdir -p /var/www/var/log \
     && mkdir -p /var/www/var/cache \
-    && chmod 755 /var/www/var/log \
-    && chmod 755 /var/www/var/cache \
-    && chown -R 1000:1000 /var/www/var/ \
-    && composer install --no-interaction --no-ansi --no-progress --no-suggest --optimize-autoloader \
+    && chmod 777 /var/www/var/log \
+    && chmod 777 /var/www/var/cache \
+    && composer install --no-interaction --no-ansi --no-progress --optimize-autoloader \
     && composer dump-autoload -o \
-    && rm -rf /var/www/var/cache/* \
-&& rm -rf /var/www/html
+    && rm -rf /var/www/var/cache/*
 
 RUN echo $VERSION > /var/www/VERSION
 

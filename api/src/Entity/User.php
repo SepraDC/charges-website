@@ -31,7 +31,7 @@ use App\State\UserVerifyProvider;
     order: ['username' => 'ASC'],
     paginationEnabled: false,
 )]
-final class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]

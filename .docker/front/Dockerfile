@@ -6,13 +6,9 @@ WORKDIR /srv/app
 COPY ./.docker/front/docker-entrypoint.sh /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
-FROM base AS build
+FROM base AS final
 
 COPY ./front /srv/app
-
-RUN pnpm install && pnpm run build
-
-FROM nginx:1.20.2-alpine AS final
-
-COPY --from=build /srv/app/dist /srv/app
-COPY conf/nginx/app.conf /etc/nginx/conf.d/default.conf
+RUN chown -R "1000:1000" /srv/app
+COPY ./.docker/front/docker-entrypoint-prod.sh /docker-entrypoint.sh
+ENTRYPOINT ["/docker-entrypoint.sh"]

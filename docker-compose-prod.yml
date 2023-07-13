@@ -1,0 +1,79 @@
+version:  '3.8'
+services:
+    caddy:
+        build:
+            dockerfile: .docker/caddy/Dockerfile
+            context: .
+            target: final
+        restart: unless-stopped
+        ports:
+            # HTTP
+            - target: 80
+              published: 80
+              protocol: tcp
+            # HTTPS
+            - target: 443
+              published: 443
+              protocol: tcp
+            # HTTP/3
+            - target: 443
+              published: 443
+              protocol: udp
+            - "24678:24678"
+        volumes:
+            - caddy_data:/data
+            - caddy_config:/config
+        environment:
+            HOST: ${HOST}
+    api:
+        build:
+            context: .
+            target: final
+            dockerfile: .docker/api/Dockerfile
+        depends_on:
+            - db
+        volumes:
+            - ./api:/var/www
+        environment:
+            XDEBUG_SESSION: debug-local
+            APP_ENV: prod
+            HOST: ${HOST}
+            APP_UID: ${APP_UID:-1000}
+            CORS_ALLOW_ORIGIN: "^(https?://(?:.+\\.)?${HOST}(?::\\d{1,5})?)$$"
+            DB_USER: ${MYSQL_USER}
+            DB_NAME: ${MYSQL_DATABASE}
+            DB_PASSWORD: ${MYSQL_PASSWORD}
+        networks:
+            default:
+                aliases:
+                    - api.${HOST}
+    db:
+        image: mariadb:10.5.5
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: ${MYSQL_DATABASE:-charges-website}
+            MYSQL_USER: ${MYSQL_USER:-charges-user}
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD:-charges-user}
+            TZ: ${TZ:-Europe/Paris}
+        volumes:
+            - mysql_database:/var/lib/mysql
+        ports:
+            - "3306:3306"
+        cap_add:
+            - SYS_NICE
+    front:
+        build:
+            target: final
+            context: .
+            dockerfile: .docker/front/Dockerfile
+        ports:
+            - "3000:3000"
+        environment:
+            API_BASE_URL: "http://api.${HOST}"
+            API_PUBLIC_BASE_URL: "https://api.${HOST}"
+            HOST: "0.0.0.0"
+volumes:
+    mysql_database:
+    caddy_data:
+    caddy_config:

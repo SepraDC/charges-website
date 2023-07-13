@@ -17,8 +17,8 @@ setup-ssl: ## Setup SSL post-install
 	@make instruct-ssl
 
 generate-ssl: ## Generate the SSL certificate and CA
-	docker run --rm -v $(CWD)docker/caddy/certs:/root/.local/share/mkcert goodeggs/mkcert -cert-file /root/.local/share/mkcert/local-cert.pem -key-file /root/.local/share/mkcert/local-key.pem "sepradc.local" "*.sepradc.local"
-	openssl x509 -in docker/caddy/certs/rootCA.pem -inform PEM -out docker/caddy/certs/rootCA.crt
+	docker run --rm -v $(CWD).docker/caddy/certs:/root/.local/share/mkcert goodeggs/mkcert -cert-file /root/.local/share/mkcert/local-cert.pem -key-file /root/.local/share/mkcert/local-key.pem "sepradc.local" "*.sepradc.local"
+	openssl x509 -in .docker/caddy/certs/rootCA.pem -inform PEM -out .docker/caddy/certs/rootCA.crt
 
 instruct-ssl: ## Tell users to RTFM
 	echo "\033[0;32mLes certificats ont été générés correctement\033[0m"
@@ -27,8 +27,15 @@ instruct-ssl: ## Tell users to RTFM
 up: ## Start project
 	docker compose up -d --build
 
+up-prod: ## Start prod project
+	docker compose -f docker-compose-prod.yml up -d --build
+
 down: ## Stop project
 	docker compose down --remove-orphans
+
+.PHONY: db
+db-dump: ## Dump database schema
+	docker compose exec db /usr/bin/mysqldump -u root -p charges-website
 
 .PHONY: api
 api: ## Enter php container
