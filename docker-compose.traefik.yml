@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  traefik:
+    # The official v2 Traefik docker image
+    image: traefik:v2.10
+    # Enables the web UI and tells Traefik to listen to docker
+    command:
+      - --providers.docker
+      - "--api.insecure=true"
+      # Do not expose container by default
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+      - "--entryPoints.websecure.address=:443"
+      - "--certificatesresolvers.le.acme.httpchallenge=true"
+      - "--certificatesResolvers.le.acme.httpChallenge.entryPoint=web"
+      - "--certificatesResolvers.le.acme.email=lucas.birac@dotsafe.fr"
+      - "--certificatesResolvers.le.acme.storage=/letsencrypt/acme.json"
+
+    ports:
+      # The HTTP & HTTPS ports
+      - "80:80"
+      - '443:443'
+      - '8080:8080'
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker/traefik/letsencrypt:/letsencrypt
+    networks:
+      sepradcnetwork:
+
+networks:
+  sepradcnetwork:
+    external: true

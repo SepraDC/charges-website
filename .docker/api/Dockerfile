@@ -101,7 +101,6 @@ RUN apk add --update linux-headers; \
 
 COPY .docker/api/docker-entrypoint.sh /docker-entrypoint.sh
 RUN mkdir -p /home/app/
-COPY .docker/api/.profile /home/app/.profile
 ENTRYPOINT ["/docker-entrypoint.sh"]
 EXPOSE 80
 
