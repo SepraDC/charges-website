@@ -31,14 +31,14 @@
             >
               <hr
                 class="mx-24 mb-4 rounded-full border-t-[3px] border-gray-300 md:hidden"
-              />
+              >
               <DialogTitle
                 as="h3"
                 class="text-center text-lg font-medium leading-6 text-orange-300"
               >
-                <slot name="title"></slot>
+                <slot name="title"/>
               </DialogTitle>
-              <slot name="body"></slot>
+              <slot name="body"/>
             </DialogPanel>
           </TransitionChild>
         </div>

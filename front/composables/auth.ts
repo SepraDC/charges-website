@@ -1,4 +1,3 @@
-import { ofetch } from "ofetch";
 import { useStorage } from "@vueuse/core";
 
 export const useAuthState = () => {
@@ -9,7 +8,7 @@ export const useAuthState = () => {
   const config = useRuntimeConfig();
 
   const verify = async () => {
-    authUser.value = await ofetch(
+    authUser.value = await $fetch(
       `${config.API_BASE_URL || config.public.API_BASE_URL}/verify`,
       {
         method: "GET",
@@ -36,7 +35,7 @@ export const useAuth = () => {
     },
     options: { callbackUrl: string }
   ) => {
-    const { token } = await ofetch(
+    const data = await $fetch(
       `${runtimeConfig.API_BASE_URL || runtimeConfig.public.API_BASE_URL}/auth`,
       {
         method: "POST",
@@ -46,11 +45,21 @@ export const useAuth = () => {
       console.error(err);
     });
 
-    const authCookie = useCookie("authToken", token);
-    authCookie.value = token;
+    const authCookie = useCookie("authToken", data.token);
+    authCookie.value = data.token;
 
     const router = useRouter();
     router.push(options.callbackUrl);
   };
-  return { signIn };
+
+  const signOut = () => {
+    const authCookie = useCookie("authToken")
+    const authUser = useCookie('authUser');
+    authCookie.value = null
+    authUser.value = null
+
+    
+    navigateTo('login')
+  }
+  return { signIn, signOut };
 };

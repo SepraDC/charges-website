@@ -1,6 +1,6 @@
-import { Bank } from "~/@type/Bank";
-import { ChargeType } from "~/@type/ChargeType";
-import { User } from "~/@type/User";
+import type { Bank } from "@type/Bank";
+import type { ChargeType } from "@type/ChargeType";
+import type { User } from "@type/User";
 
 export interface Charge {
   "@id": string;

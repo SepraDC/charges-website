@@ -1,6 +1,6 @@
-export default defineNuxtRouteMiddleware((to) => {
+export default defineNuxtRouteMiddleware(async () => {
   const { verify } = useAuthState();
-  verify().catch((err) => {
+  await verify().catch((err) => {
     console.error(err);
     return navigateTo("/login");
   });

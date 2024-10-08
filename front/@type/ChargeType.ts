@@ -1,4 +1,4 @@
-import { Charge } from "./Charge";
+import type { Charge } from "@type/Charge";
 
 export interface ChargeType {
   "@id": string;

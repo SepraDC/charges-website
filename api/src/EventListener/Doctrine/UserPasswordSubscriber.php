@@ -5,12 +5,13 @@ namespace App\EventListener\Doctrine;
 
 
 use App\Entity\User;
+use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Events;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-class UserPasswordSubscriber implements \Doctrine\Common\EventSubscriber
+class UserPasswordSubscriber implements EventSubscriber
 {
     /**
      * UserPasswordSubscriber constructor.

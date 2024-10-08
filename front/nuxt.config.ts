@@ -19,6 +19,13 @@ export default defineNuxtConfig({
     },
     API_BASE_URL: process.env.API_BASE_URL,
   },
-
-  modules: ["@vueuse/nuxt", "@nuxtjs/tailwindcss", "@nuxt/devtools"],
+  colorMode: {
+    preference: "light",
+  },
+  modules: [
+    "@vueuse/nuxt",
+    "@nuxt/ui",
+    "@nuxt/image",
+    "@nuxt/eslint",
+  ],
 });

@@ -1,15 +1,15 @@
 import { ofetch } from "ofetch";
-import { $Fetch, NitroFetchOptions, NitroFetchRequest } from "nitropack";
+import type { $Fetch, NitroFetchOptions, NitroFetchRequest } from "nitropack";
 import { stringify } from "qs";
-import { ChargeType } from "../@type/ChargeType";
-import { Bank } from "../@type/Bank";
-import { Charge } from "../@type/Charge";
-import { User } from "../@type/User";
+import type { ChargeType } from "@type/ChargeType";
+import type { Bank } from "@type/Bank";
+import type { Charge } from "@type/Charge";
+import type { User } from "@type/User";
 
 function wrapFetch(fetch: $Fetch) {
   return (
     request: NitroFetchRequest,
-    options: NitroFetchOptions<any> = {}
+    options: NitroFetchOptions<never> = {}
   ): ReturnType<$Fetch> => {
     // modify request if has params in options
     let modifiedRequest, modifiedOptions;
@@ -88,39 +88,38 @@ export function exposeCollectionAsync<T>(
   );
 }
 
-const operations = (api: $Fetch<T>, prefix: NitroFetchRequest = "") => ({
+const operations = <T>(api: $Fetch<T>, prefix: NitroFetchRequest = "") => ({
   get:
-    <T>(url: NitroFetchRequest = "") =>
-    (id: string, options: NitroFetchOptions<any> = {}) =>
-      api<T>(`${prefix}${url}/${id}`, options),
+    <U>(url: NitroFetchRequest = "") =>
+    (id: string, options: NitroFetchOptions<never> = {}) =>
+      api<U>(`${prefix}${url}/${id}`, options),
   getCollection:
     <T>(url: NitroFetchRequest = "") =>
-    (options: NitroFetchOptions<any> = {}) =>
+    (options: NitroFetchOptions<never> = {}) =>
       exposeCollectionAsync(
         api<CollectionResponse<T>>(`${prefix}${url}`, options)
       ),
   post:
     (url: NitroFetchRequest = "") =>
-    (options: NitroFetchOptions<any> = {}) =>
+    (options: NitroFetchOptions<never> = {}) =>
       api(`${prefix}${url}`, { method: "POST", ...options }),
   put:
     (url: NitroFetchRequest = "") =>
-    (id: string, options: NitroFetchOptions<any> = {}) =>
+    (id: string, options: NitroFetchOptions<never> = {}) =>
       api(`${prefix}${url}/${id}`, { method: "PUT", ...options }),
   patch:
     (url: NitroFetchRequest = "") =>
-    (id: string | null, options: NitroFetchOptions<any> = {}) =>
+    (id: string | null, options: NitroFetchOptions<never> = {}) =>
       api(`${prefix}${url}/${id}`, { method: "PATCH", ...options }),
   delete:
     (url: NitroFetchRequest = "") =>
-    (id: string, options: NitroFetchOptions<any> = {}) =>
+    (id: string, options: NitroFetchOptions<never> = {}) =>
       api(`${prefix}${url}/${id}`, { method: "DELETE", ...options }),
 });
 
 export const useApiRoutes = () => {
   const api = useApi();
 
-  const rootOperations = operations(api);
   const prefixOperations = <T>(
     prefix: string,
     getter: (op: ReturnType<typeof operations>) => T
@@ -131,7 +130,7 @@ export const useApiRoutes = () => {
   return {
     auth: prefixOperations("auth", ({ post }) => ({
       login: (values: { username: string; password: string }) =>
-        post({ body: values }),
+        post()({ body: values }),
     })),
     verify: prefixOperations("verify", ({ get }) => ({
       verify: get<User>(),
@@ -146,8 +145,8 @@ export const useApiRoutes = () => {
       ({ get, getCollection, delete: remove, post, put }) => ({
         get: get<Charge>(),
         getCollection: (query = {}) => getCollection()({ params: query }),
-        create: (values: any) => post()({ body: values }),
-        update: (id: string, values: any) => put()(id, { body: values }),
+        create: (values: never) => post()({ body: values }),
+        update: (id: string, values: never) => put()(id, { body: values }),
         delete: (id: string) => remove()(id),
         reset: () => api("/charges/reset", { method: "PATCH", body: {} }),
       })

@@ -35,6 +35,8 @@ services:
             - db
         volumes:
             - ./api:/var/www
+        env_file:
+            - .env
         environment:
             HOST: ${HOST}
             XDEBUG_SESSION: debug-local
@@ -48,10 +50,8 @@ services:
     db:
         image: mariadb:10.5.5
         restart: unless-stopped
-        environment:
-            MYSQL_DATABASE: ${MYSQL_DATABASE:-charges-website}
-            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
-            TZ: ${TZ:-Europe/Paris}
+        env_file:
+            - .env
         volumes:
             - mysql_database:/var/lib/mysql
         ports:

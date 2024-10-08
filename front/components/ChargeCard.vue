@@ -1,45 +1,35 @@
 <template>
   <div class="flex items-center gap-5 border-b-2 py-5 last:border-b-0">
     <slot name="img">
-      <button
-        class="rounded-lg bg-gray-200 p-1 hover:bg-gray-300 focus:outline-gray-300"
+      <UButton
+        class="rounded-lg bg-gray-200 p-2 hover:bg-gray-300 focus:outline-gray-300"
+        size="xl"
         @click="$emit('updateState', { id: charge.id, value: !charge.state })"
       >
-        <InlineSvg
-          src="/svg/money-3.svg"
-          class="h-10 w-10 lg:h-16 lg:w-16"
-          :class="[charge.state ? 'text-green-500' : 'text-red-500']"
-        ></InlineSvg>
-      </button>
+        <UIcon name="i-mdi-hand-coin" :class="[charge.state ? 'text-green-500' : 'text-red-500']" class="h-10 w-10" />
+      </UButton>
     </slot>
-    <div class="flex-1">
-      <span class="mb-2 block font-bold">{{ charge.name }}</span>
-      <span
-        class="rounded-md bg-orange-300 px-4 py-1 text-sm font-bold text-white"
-      >
-        {{ charge.chargeType?.name }}
-      </span>
+    <div class="flex-1 truncate">
+      <p class="mb-2 block font-bold truncate" :title="charge.name">{{ charge.name }}</p>
+      <UBadge :label="charge.chargeType?.name" color="orange"/>
     </div>
     <div class="font-extrabold">{{ charge.amount }} €</div>
-    <div class="flex gap-2">
-      <button
-        class="h-7 w-7 focus:outline-red-600"
+    <UDropdown v-model="isOpen" class="block md:hidden" :items="[[{label: 'Modifier', icon: 'i-mdi-edit', click: () => updateChargeOpen = true}, {label: 'Supprimer', icon: 'i-mdi-trash', click: () => confirmPopupOpen = true}]]">
+        <UButton icon="i-mdi-menu" variant="ghost"/>
+      </UDropdown>
+    <div class="hidden md:flex gap-2">
+      <UButton
+        color="red"
+        variant="outline"
+        icon="i-mdi-trash"
         @click.prevent="confirmPopupOpen = true"
-      >
-        <InlineSvg
-          class="h-full w-full text-red-500 hover:text-red-600"
-          src="/svg/delete.svg"
-        ></InlineSvg>
-      </button>
-      <button
-        class="h-7 w-7 focus:outline-blue-600"
+      />
+      <UButton
+        color="blue"
+        variant="outline"
+        icon="i-mdi-edit"
         @click.prevent="updateChargeOpen = true"
-      >
-        <InlineSvg
-          class="h-full w-full text-blue-500 hover:text-blue-600"
-          src="/svg/edit.svg"
-        ></InlineSvg>
-      </button>
+      />
     </div>
   </div>
   <teleport to="body">
@@ -47,35 +37,35 @@
       :is-open="confirmPopupOpen"
       @confirm="confirmDelete"
       @cancel="closePopup"
-    ></ConfirmPopup>
-    <ModalBottomSheet
-      :is-open="updateChargeOpen"
-      @close="updateChargeOpen = false"
-    >
-      <template #title>Mise à jour : {{ charge.name }}</template>
-      <template #body>
+    />
+    <UModal v-model="updateChargeOpen">
+      <UCard>
+        <template #header>
+          <h3 class="text-center text-lg font-medium leading-6 text-orange-300">Mise à jour: {{ charge.name }}</h3>
+        </template>
         <ChargeForm
           :initial-value="charge"
-          @onSubmit="updateCharge"
-        ></ChargeForm>
-      </template>
-    </ModalBottomSheet>
+          @on-submit="updateCharge"
+        />
+      </UCard>
+  </UModal>
   </teleport>
 </template>
 <script setup lang="ts">
-import InlineSvg from "vue-inline-svg";
+import type { Charge } from "@type/Charge";
 import { ref } from "vue";
-import { Charge } from "../@type/Charge";
-import ConfirmPopup from "./ConfirmPopup.vue";
-import ModalBottomSheet from "./ModalBottomSheet.vue";
 import ChargeForm from "./ChargeForm.vue";
-
+import ConfirmPopup from "./ConfirmPopup.vue";
 const props = defineProps<{
   charge: Charge;
 }>();
 
+
+
 const confirmPopupOpen = ref<boolean>(false);
 const updateChargeOpen = ref<boolean>(false);
+
+const isOpen = ref(false)
 
 const emit = defineEmits<{
   updateState: [id: string, value: boolean];
@@ -92,7 +82,7 @@ const confirmDelete = () => {
   emit("deleteCharge", props.charge.id);
 };
 
-const updateCharge = (charge: any) => {
+const updateCharge = (charge: Charge) => {
   updateChargeOpen.value = false;
   emit("updateCharge", { id: props.charge.id, value: charge.value });
 };
