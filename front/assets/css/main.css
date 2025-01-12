@@ -1,0 +1,18 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme {
+	--font-sans: "Lato", sans-serif;
+
+	--color-gold-50: #fff9eb;
+	--color-gold-100: #fef0c7;
+	--color-gold-200: #fde08b;
+	--color-gold-300: #fbc94d;
+	--color-gold-400: #f7b32b;
+	--color-gold-500: #f59e0b;
+	--color-gold-600: #d97706;
+	--color-gold-700: #b45309;
+	--color-gold-800: #92400e;
+	--color-gold-900: #78350f;
+	--color-gold-950: #451a03;
+}

@@ -2,6 +2,7 @@
 MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 CWD := $(dir $(MAKEFILE_PATH))
 UID := $(shell id -u)
+HOST := sepradc.local
 
 setup: ## Setup the project from zero
 	@make generate-ssl
@@ -17,7 +18,7 @@ setup-ssl: ## Setup SSL post-install
 	@make instruct-ssl
 
 generate-ssl: ## Generate the SSL certificate and CA
-	docker run --rm -v $(CWD).docker/caddy/certs:/root/.local/share/mkcert goodeggs/mkcert -cert-file /root/.local/share/mkcert/local-cert.pem -key-file /root/.local/share/mkcert/local-key.pem "sepradc.local" "*.sepradc.local"
+	docker run --rm -v $(CWD).docker/caddy/certs:/root/.local/share/mkcert goodeggs/mkcert -cert-file /root/.local/share/mkcert/local-cert.pem -key-file /root/.local/share/mkcert/local-key.pem "$(HOST)" "*.$(HOST)"
 	openssl x509 -in .docker/caddy/certs/rootCA.pem -inform PEM -out .docker/caddy/certs/rootCA.crt
 
 instruct-ssl: ## Tell users to RTFM

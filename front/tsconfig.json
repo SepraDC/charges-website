@@ -1,9 +1,9 @@
 {
-  // https://nuxt.com/docs/guide/concepts/typescript
-  "extends": "./.nuxt/tsconfig.json",
-  "compilerOptions": {
-    "paths": {
-      "@type/*": ["./@type/*"]
-    }
-  }
+	// https://nuxt.com/docs/guide/concepts/typescript
+	"extends": "./.nuxt/tsconfig.json",
+	"compilerOptions": {
+		"paths": {
+			"@type/*": ["./@type/*"]
+		}
+	}
 }

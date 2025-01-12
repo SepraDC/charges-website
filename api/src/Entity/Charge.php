@@ -68,7 +68,6 @@ class Charge
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'charges')]
     public ?User $user;
 
-
     public function getId(): ?int
     {
         return $this->id;

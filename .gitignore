@@ -3,3 +3,4 @@
 /.env
 /.vscode
 /docker/traefik/letsencrypt/*
+biome.json
