@@ -1,207 +1,177 @@
 <template>
   <section class="container mx-auto grid grid-cols-1 gap-5 p-6 lg:grid-cols-2">
-    <h1 class="col-span-full text-xl font-bold text-gray-800">
-      Bonjour, <br />
-      <span class="capitalize text-orange-300">{{
-        currentUser?.userIdentifier || "Utilisateur"
-      }}</span>
-    </h1>
-    <div class="col-span-1 flex flex-col rounded-lg bg-blue-500 p-5 text-white">
+    <div class="col-span-full flex justify-between text-xl font-bold text-neutral-500">
+      <h1>Bonjour, <br>
+        <span class="capitalize text-gold-400">{{
+          currentUser?.userIdentifier || "Utilisateur"
+        }}</span>
+      </h1>
+      <div>
+        <UButton icon="i-mdi-logout" variant="ghost" color="primary" label="Deconnexion" @click="signOut" />
+      </div>
+    </div>
+    <div class="col-span-1 flex flex-col h-fit rounded-lg bg-blue-500 p-5 text-white">
       <span>Restant ce mois-ci</span>
       <span class="text-2xl font-extrabold">{{ sumCurrent || 0 }}€</span>
       <span class="self-end">Total</span>
       <span class="self-end text-xl font-extrabold">{{ sum || 0 }}€</span>
     </div>
-    <div class="col-span-1">
-      <div class="flex justify-between">
-        <h1 class="text-xl font-bold text-gray-300">Banques</h1>
-      </div>
-      <div class="w-full overflow-auto py-5">
-        <div class="flex w-fit gap-5">
-          <button
-            v-for="bank in banks"
-            :key="bank.id"
-            :title="bank.name"
-            class="aspect-square w-14 rounded-lg bg-gray-200 p-3 hover:bg-gray-300 focus:outline-orange-300"
-            :class="[
-              selectedBank === bank.id ? 'border-2 border-orange-300' : '',
-            ]"
-            @click.prevent="updateQuery(bank.id)"
-          >
-            <img
-              class="h-full w-full rounded-lg object-cover"
-              :src="bank.image"
-              :alt="bank.abbreviation"
-            />
-          </button>
-          <button
-            title="Tous"
-            class="aspect-square w-14 rounded-lg bg-gray-200 p-3 hover:bg-gray-300 focus:outline-orange-300"
-            :class="[!selectedBank ? 'border-2 border-orange-300' : '']"
-            @click.prevent="updateQuery()"
-          >
-            <InlineSvg
-              class="h-full w-full text-gray-800"
-              src="/svg/all.svg"
-            ></InlineSvg>
-          </button>
+    <div v-if="charges?.length > 0" class="col-span-1 flex gap-5">
+      <div class="flex-1">
+        <h1 class="text-xl font-bold text-neutral-500">Banques</h1>
+        <div class="w-full overflow-auto py-5">
+          <div class="flex w-fit gap-5">
+            <UButton v-for="bank in banks" :key="bank.id" size="xl" variant="ghost" class="w-15 p-0 rounded-xl"
+              :class="[selectedBank === bank.id ? 'border-2 border-offset-2 border-gold-500 dark:border-gold-400' : '']"
+              :title="bank.name" @click="updateQuery(bank.id)">
+              <img class="h-full w-full rounded-lg object-cover" :src="bank.image" :alt="bank.abbreviation">
+            </UButton>
+            <UButton icon="i-mdi-view-grid" size="xl" color="gray" class="p-0 rounded-xl w-15" block
+              :class="[!selectedBank ? 'border-2 border-offset-2 border-gold-500 dark:border-gold-400' : 'border-2 border-offset-2 border-neutral-500 dark:border-neutral-400']"
+              title="Tous" @click="updateQuery()"></UButton>
+          </div>
         </div>
       </div>
     </div>
     <div class="col-span-full h-auto">
       <div class="flex justify-between">
-        <h1 class="text-xl font-bold text-gray-300">Prélevements</h1>
+        <div class="flex gap-3 justify-center">
+          <h1 class=" text-xl font-bold text-neutral-500">Prélevements</h1>
+          <UButtonGroup>
+            <UButton icon="i-lucide-layout-list" @click="displayList = true" class="lg:rounded-full lg:px-5"
+              :color="displayList ? 'primary' : 'neutral'">
+            </UButton>
+            <UButton icon="i-lucide-chart-pie" @click="displayList = false" class="lg:rounded-full lg:px-5"
+              :color="displayList ? 'neutral' : 'primary'">
+            </UButton>
+          </UButtonGroup>
+        </div>
         <div class="flex gap-2">
-          <button
-            title="Réinitiliser"
-            class="flex h-7 w-7 items-center justify-center rounded bg-orange-300 p-0 text-3xl font-extrabold text-white hover:bg-orange-400 focus:outline-orange-400"
-            @click.prevent="resetCharges"
-          >
-            <InlineSvg src="/svg/arrow.svg" class="w-ful h-full"></InlineSvg>
-          </button>
-          <button
-            title="Ajouter"
-            class="flex h-7 w-7 items-center justify-center rounded bg-green-300 p-0 text-3xl font-extrabold text-white hover:bg-green-400 focus:outline-green-400"
-            @click.prevent="openModal"
-          >
-            <InlineSvg
-              src="/svg/plus.svg"
-              class="h-full w-full text-white"
-            ></InlineSvg>
-          </button>
+          <UButton title="Réinitialiser" icon="i-mdi-reload" color="neutral" @click="resetCharges" />
+          <LazyUModal v-model:open="createChargeOpen" prevent-close title="Ajouter un prélèvement">
+            <UButton title="Ajouter" icon="i-mdi-plus" />
+            <template #body>
+              <ChargeForm @on-submit="submitCharge" />
+            </template>
+          </LazyUModal>
         </div>
       </div>
-      <ChargeCard
-        v-for="charge in charges"
-        :key="charge['@id']"
-        :charge="charge"
-        @updateState="updateChargeState"
-        @deleteCharge="deleteCharge"
-        @updateCharge="updateCharge"
-      />
-    </div>
-    <ModalBottomSheet :is-open="isOpen" @close="closeModal">
-      <template #title>Ajouter un prélèvement</template>
-      <template #body>
-        <ChargeForm @onSubmit="submitCharge"></ChargeForm>
+      <template v-if="displayList">
+        <LazyChargeCard v-for="charge in charges" :key="charge['@id']" :charge="charge"
+          @update-state="updateChargeState" @delete-charge="deleteCharge" @update-charge="updateCharge" />
       </template>
-    </ModalBottomSheet>
+      <template v-else>
+        <LazyChargeCategoryChart :charges="charges" />
+      </template>
+    </div>
   </section>
 </template>
 <script lang="ts" setup>
-import { ref } from "vue";
-import InlineSvg from "vue-inline-svg";
-import { useApiRoutes, getMembers } from "../composables/api";
-import { ChargeType } from "../@type/ChargeType";
-import { Bank } from "../@type/Bank";
-import { Charge } from "../@type/Charge";
+import type { Bank } from "@type/Bank";
+import type { Charge } from "@type/Charge";
+import { computed, ref } from "vue";
+import ChargeCategoryChart from "../components/ChargeCategoryChart.vue";
 import ChargeForm from "../components/ChargeForm.vue";
-import ModalBottomSheet from "../components/ModalBottomSheet.vue";
+import { getMembers, useApiRoutes } from "../composables/api";
 
 definePageMeta({
-  middleware: ["auth"],
+	middleware: ["auth"],
 });
 
 const currentUser = ref();
 
 const { authUser } = useAuthState();
+const { signOut } = useAuth();
 const api = useApiRoutes();
+const displayList = ref(true);
+const createChargeOpen = ref(false);
+const toast = useToast();
 
 currentUser.value = authUser.value;
 
 const sum = computed(() => {
-  return charges.value
-    ?.reduce((partialSum: number, item: Charge) => partialSum + item.amount, 0)
-    .toFixed(2);
+	return charges.value
+		?.reduce((partialSum: number, item: Charge) => partialSum + item.amount, 0)
+		.toFixed(2);
 });
 
 const sumCurrent = computed(() => {
-  return charges.value
-    ?.reduce(
-      (partialSum: number, item: Charge) =>
-        partialSum + (!item.state ? item.amount : 0),
-      0
-    )
-    .toFixed(2);
+	return charges.value
+		?.reduce(
+			(partialSum: number, item: Charge) =>
+				partialSum + (!item.state ? item.amount : 0),
+			0,
+		)
+		.toFixed(2);
 });
 
-const { data: banks } = useAsyncData<never, never, Bank[]>("userBanks", () => {
-  return getMembers(api.banks.getUserBanks());
+const { data: banks } = useAsyncData<Bank[]>("userBanks", () => {
+	return getMembers(api.banks.getUserBanks());
 });
-
-const { data: chargeTypes } = useAsyncData<never, never, ChargeType[]>(
-  "chargeTypes",
-  () => {
-    return getMembers(api.chargeTypes.getCollection());
-  }
-);
 
 const query = ref({ "bank.id": banks.value?.[0]?.id });
-const {
-  data: charges,
-  error,
-  refresh: refreshCharges,
-} = useAsyncData<never, never, Charge[]>("charges", () => {
-  return getMembers(api.charges.getCollection(query.value));
-});
-
-const isOpen = ref(false);
+const { data: charges, refresh: refreshCharges } = useAsyncData<Charge[]>(
+	"charges",
+	() => {
+		return getMembers(api.charges.getCollection(query.value));
+	},
+);
 const selectedBank = ref<number | null>();
 
-const openModal = () => {
-  isOpen.value = true;
-};
-
-const closeModal = () => {
-  isOpen.value = false;
-};
-
 const updateQuery = async (id?: number) => {
-  if (!id) {
-    selectedBank.value = null;
-    query.value = {};
-  } else {
-    selectedBank.value = id;
-    query.value = { "bank.id": id };
-  }
-  await refreshCharges();
+	if (!id) {
+		selectedBank.value = null;
+		query.value = {};
+	} else {
+		selectedBank.value = id;
+		query.value = { "bank.id": id };
+	}
+	await refreshCharges();
 };
 
-const submitCharge = async (charge: any) => {
-  try {
-    await api.charges.create(charge.value);
-    closeModal();
-  } catch (e) {
-    console.error(e);
-  }
-  await refreshCharges();
+const submitCharge = async (charge: Ref<Charge>) => {
+	try {
+		await api.charges.create(charge.value);
+		await refreshCharges();
+		createChargeOpen.value = false;
+	} catch (e) {
+		console.error(e);
+	}
 };
 
 const updateChargeState = async (charge: { id: string; value: boolean }) => {
-  await api.charges.update(charge.id, { state: charge.value });
-  await refreshCharges();
+	try {
+		await api.charges.update(charge.id, { state: charge.value });
+		await refreshCharges();
+	} catch (e) {
+		toast.add({
+			color: "error",
+			title: "Une erreur est survenue",
+			description: e,
+		});
+	}
 };
 
 const updateCharge = async (charge: { id: string; value: Charge }) => {
-  try {
-    await api.charges.update(charge.id, charge.value);
-    await refreshCharges();
-  } catch (e) {
-    console.error(e);
-  }
+	try {
+		await api.charges.update(charge.id, charge.value);
+		await refreshCharges();
+	} catch (e) {
+		console.error(e);
+	}
 };
 
 const deleteCharge = async (id: string) => {
-  try {
-    await api.charges.delete(id);
-    await refreshCharges();
-  } catch (e) {
-    console.error(e);
-  }
+	try {
+		await api.charges.delete(id);
+		await refreshCharges();
+	} catch (e) {
+		console.error(e);
+	}
 };
 
 const resetCharges = async () => {
-  await api.charges.reset();
-  await refreshCharges();
+	await api.charges.reset();
+	await refreshCharges();
 };
 </script>

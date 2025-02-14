@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   traefik:
     # The official v2 Traefik docker image
