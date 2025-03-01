@@ -2,19 +2,19 @@
 MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 CWD := $(dir $(MAKEFILE_PATH))
 UID := $(shell id -u)
-HOST := sepradc.local
+HOST := charge.local
 
 setup: ## Setup the project from zero
 	@make generate-ssl
-	docker-compose up -d
+	docker compose up -d
 	@echo "Configuring APP_UID"
 	@sed -i "s/APP_UID=.*/APP_UID=`id -u`/g" .env
 	@make instruct-ssl
 
 setup-ssl: ## Setup SSL post-install
 	@make generate-ssl
-	docker-compose stop caddy
-	docker-compose up -d --build caddy
+	docker compose stop caddy
+	docker compose up -d --build caddy
 	@make instruct-ssl
 
 generate-ssl: ## Generate the SSL certificate and CA
@@ -29,7 +29,7 @@ up: ## Start project
 	docker compose up -d --build
 
 up-prod: ## Start prod project
-	docker compose -f docker-compose-prod.yml up -d --build
+	docker compose -f docker compose-prod.yml up -d --build
 
 down: ## Stop project
 	docker compose down --remove-orphans
@@ -40,7 +40,7 @@ db-dump: ## Dump database schema
 
 .PHONY: api
 api: ## Enter php container
-	docker-compose exec -u app api sh -l
+	docker compose exec -u app api sh -l
 
 migrations: ## Run migrations
 	docker exec -u app -it charge-website-php-fpm-1 bash -c "php bin/console doctrine:migrations:migrate"

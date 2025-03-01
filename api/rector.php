@@ -22,9 +22,9 @@ return static function (RectorConfig $rectorConfig): void {
 
     $rectorConfig->sets([
         DoctrineSetList::ANNOTATIONS_TO_ATTRIBUTES,
-        SymfonySetList::ANNOTATIONS_TO_ATTRIBUTES,
-        SymfonyLevelSetList::UP_TO_SYMFONY_61,
-        SetList::PHP_81,
+        SymfonySetList::SYMFONY_CODE_QUALITY,
+        SymfonySetList::SYMFONY_64,
+        SetList::PHP_82,
         SetList::CODE_QUALITY
     ]);
 };

@@ -35,14 +35,14 @@ services:
            - db
        volumes:
            - ./api:/var/www
-       env_file:
-           - .env
        environment:
            HOST: ${HOST}
+           APP_ENV: ${APP_ENV}
            XDEBUG_SESSION: debug-local
-           PHP_IDE_CONFIG: serverName=api.sepradc.local
+           PHP_IDE_CONFIG: serverName=api.charge.local
            XDEBUG_CLIENT_HOST: ${XDEBUG_CLIENT_HOST:-127.17.0.1}
            APP_UID: ${APP_UID:-1000}
+           DATABASE_URL: ${DATABASE_URL}
        networks:
            default:
                aliases:
@@ -56,7 +56,7 @@ services:
         volumes:
             - mysql_database:/var/lib/mysql
         ports:
-            - 3306:3306
+            - "3306:3306"
         cap_add:
             - SYS_NICE
     front:

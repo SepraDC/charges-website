@@ -3,18 +3,20 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Delete;
 use App\Controller\BanksByUserController;
+use App\Grid\BankGrid;
 use App\Repository\BankRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Sylius\Resource\Metadata\AsResource;
+use Sylius\Resource\Metadata\Index;
+use Sylius\Resource\Model\ResourceInterface;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
@@ -36,7 +38,17 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 )]
 #[ORM\Entity(repositoryClass: BankRepository::class)]
 #[Vich\Uploadable]
-class Bank
+#[AsResource(
+    section: 'admin',
+    templatesDir: '@SyliusAdminUi/crud',
+    routePrefix: '/admin-sylius',
+    operations: [
+        new Index(
+            grid: BankGrid::class
+        )
+    ]
+)]
+class Bank implements ResourceInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -132,7 +144,7 @@ class Bank
     public function setImageFile(?File $imageFile = null): void
     {
         $this->imageFile = $imageFile;
-        if ($imageFile) {
+        if ($imageFile instanceof \Symfony\Component\HttpFoundation\File\File) {
             $this->setImageSize($imageFile->getSize());
         }
     }

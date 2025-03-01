@@ -26,7 +26,7 @@ use App\State\UserVerifyProvider;
         new Post(normalizationContext: ['groups' => 'user:readUserItem'], security: 'is_granted("ROLE_ADMIN")', input: UserCreateDto::class),
         new Put(normalizationContext: ['groups' => 'user:readUserItem'], security: 'is_granted("ROLE_ADMIN")'),
         new Delete(security: 'is_granted("ROLE_ADMIN")'),
-        new Get(uriTemplate: "/verify", provider: UserVerifyProvider::class, normalizationContext: ['groups' => 'user:verify'] )
+        new Get(uriTemplate: "/verify", normalizationContext: ['groups' => 'user:verify'], provider: UserVerifyProvider::class)
     ],
     order: ['username' => 'ASC'],
     paginationEnabled: false,
@@ -144,7 +144,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @see UserInterface
      */
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
          $this->plainPassword = null;
     }

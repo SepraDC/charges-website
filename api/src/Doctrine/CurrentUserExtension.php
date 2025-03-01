@@ -8,7 +8,7 @@ use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Operation;
 use App\Entity\Charge;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class CurrentUserExtension implements QueryCollectionExtensionInterface, QueryItemExtensionInterface
 {
@@ -28,7 +28,7 @@ class CurrentUserExtension implements QueryCollectionExtensionInterface, QueryIt
 
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
-        if (Charge::class !== $resourceClass || null === $user = $this->security->getUser()) {
+        if (Charge::class !== $resourceClass || !($user = $this->security->getUser()) instanceof \Symfony\Component\Security\Core\User\UserInterface) {
             return;
         }
 
