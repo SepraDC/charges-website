@@ -18,39 +18,39 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\State\UserVerifyProvider;
 
+#[
+    ApiResource(
+        operations: [
+            new Get(),
+            new Get(
+                uriTemplate: "/verify",
+                normalizationContext: ["groups" => "user:verify"],
+                provider: UserVerifyProvider::class,
+            ),
+        ],
+    ),
+]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ApiResource(
-    operations: [
-        new Get(normalizationContext: ['groups' => 'user:readUserItem']),
-        new GetCollection(normalizationContext: ['groups' => 'user:readUserList']),
-        new Post(normalizationContext: ['groups' => 'user:readUserItem'], security: 'is_granted("ROLE_ADMIN")', input: UserCreateDto::class),
-        new Put(normalizationContext: ['groups' => 'user:readUserItem'], security: 'is_granted("ROLE_ADMIN")'),
-        new Delete(security: 'is_granted("ROLE_ADMIN")'),
-        new Get(uriTemplate: "/verify", provider: UserVerifyProvider::class, normalizationContext: ['groups' => 'user:verify'] )
-    ],
-    order: ['username' => 'ASC'],
-    paginationEnabled: false,
-)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    #[Groups(['user:readUserItem', 'user:readUserList', 'user:verify'])]
+    #[ORM\Column(type: "integer")]
+    #[Groups(["user:readUserItem", "user:readUserList", "user:verify"])]
     private ?int $id;
 
-    #[ORM\Column(type: 'string', length: 180, unique: true)]
-    #[Groups(['user:readUserItem', 'user:readUserList'])]
+    #[ORM\Column(type: "string", length: 180, unique: true)]
+    #[Groups(["user:readUserItem", "user:readUserList"])]
     private string $username;
 
-    #[ORM\Column(type: 'json')]
-    #[Groups(['user:readUserItem', 'user:readUserList', 'user:verify'])]
+    #[ORM\Column(type: "json")]
+    #[Groups(["user:readUserItem", "user:readUserList", "user:verify"])]
     private array $roles = [];
 
     /**
      * @var string The hashed password
      */
-    #[ORM\Column(type: 'string')]
+    #[ORM\Column(type: "string")]
     private string $password;
 
     /**
@@ -58,7 +58,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private ?string $plainPassword;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Charge::class)]
+    #[ORM\OneToMany(mappedBy: "user", targetEntity: Charge::class)]
     private Collection $charges;
 
     public function __construct()
@@ -77,7 +77,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-
     public function setUserIdentifier(string $username): self
     {
         $this->username = $username;
@@ -90,7 +89,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *
      * @see UserInterface
      */
-    #[Groups(['user:verify'])]
+    #[Groups(["user:verify"])]
     public function getUserIdentifier(): string
     {
         return (string) $this->username;
@@ -103,7 +102,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
+        $roles[] = "ROLE_USER";
 
         return array_unique($roles);
     }
@@ -144,9 +143,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @see UserInterface
      */
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
-         $this->plainPassword = null;
+        $this->plainPassword = null;
     }
 
     /**
@@ -170,7 +169,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeCharge(Charge $charge): self
     {
         // set the owning side to null (unless already changed)
-        if ($this->charges->removeElement($charge) && $charge->getUser() === $this) {
+        if (
+            $this->charges->removeElement($charge) &&
+            $charge->getUser() === $this
+        ) {
             $charge->setUser(null);
         }
 
@@ -180,7 +182,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @return string
      */
-    public function getPlainPassword():?string
+    public function getPlainPassword(): ?string
     {
         return $this->plainPassword;
     }

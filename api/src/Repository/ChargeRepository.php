@@ -22,12 +22,23 @@ class ChargeRepository extends ServiceEntityRepository
 
     public function findByUser($userId)
     {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.user = :userId')
-            ->setParameter('userId', $userId)
-            ->orderBy('c.date', 'ASC')
+        return $this->createQueryBuilder("c")
+            ->andWhere("c.user = :userId")
+            ->setParameter("userId", $userId)
+            ->orderBy("c.date", "ASC")
             ->getQuery()
             ->getResult();
+    }
+
+    public function resetByUser($userId)
+    {
+        return $this->createQueryBuilder("c")
+            ->update()
+            ->set("c.state", "0")
+            ->where("c.user = :userId")
+            ->setParameter("userId", $userId)
+            ->getQuery()
+            ->execute();
     }
 
     // /**
@@ -60,11 +71,11 @@ class ChargeRepository extends ServiceEntityRepository
     */
     public function resetState(User $user)
     {
-        return $this->createQueryBuilder('c')
+        return $this->createQueryBuilder("c")
             ->update()
-            ->set('c.state', '0')
-            ->where('c.user = :user')
-            ->setParameter('user', $user)
+            ->set("c.state", "0")
+            ->where("c.user = :user")
+            ->setParameter("user", $user)
             ->getQuery()
             ->execute();
     }

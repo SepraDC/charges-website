@@ -5,6 +5,7 @@ export default defineNuxtConfig({
 	},
 	vite: {
 		server: {
+			allowedHosts: true,
 			hmr: {
 				protocol: "wss",
 			},
@@ -15,9 +16,9 @@ export default defineNuxtConfig({
 	},
 	runtimeConfig: {
 		public: {
-			API_BASE_URL: process.env.API_PUBLIC_BASE_URL,
+			apiBaseURL: process.env.API_PUBLIC_BASE_URL,
 		},
-		API_BASE_URL: process.env.API_BASE_URL,
+		apiBaseURL: process.env.API_BASE_URL,
 	},
 	imports: {
 		autoImport: true,

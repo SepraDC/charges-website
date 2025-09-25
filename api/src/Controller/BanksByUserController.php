@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Repository\BankRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class BanksByUserController extends AbstractController
 {
@@ -15,6 +15,4 @@ class BanksByUserController extends AbstractController
     {
         return $this->repository->findByUser($this->security->getUser());
     }
-
-
 }

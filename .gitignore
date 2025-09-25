@@ -4,3 +4,4 @@
 /.vscode
 /docker/traefik/letsencrypt/*
 biome.json
+root.crt

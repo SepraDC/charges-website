@@ -7,7 +7,7 @@ namespace App\EventListener\Doctrine;
 use App\Entity\User;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Event\LifecycleEventArgs;
+use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Events;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -42,13 +42,13 @@ class UserPasswordSubscriber implements EventSubscriber
 
     private function proceedEncodePassword(LifecycleEventArgs $args)
     {
-        $entity = $args->getEntity();
+        $entity = $args->getObject();
 
         if ($entity instanceof User){
             $plainPassword = $entity->getPlainPassword();
 
             if($plainPassword && 0 < strlen($plainPassword)) {
-                $this->encodePassword($entity, $plainPassword, $args->getEntityManager());
+                $this->encodePassword($entity, $plainPassword, $args->getObjectManager());
             }
         }
     }

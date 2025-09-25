@@ -11,9 +11,9 @@ services:
         environment:
             XDEBUG_SESSION: debug-local
             APP_ENV: prod
-            HOST: ${HOST}
+            SERVER_NAME: ${SERVER_NAME}
             APP_UID: ${APP_UID:-1000}
-            CORS_ALLOW_ORIGIN: "^(https?://(?:.+\\.)?${HOST}(?::\\d{1,5})?)$$"
+            CORS_ALLOW_ORIGIN: "^(https?://(?:.+\\.)?${SERVER_NAME}(?::\\d{1,5})?)$$"
             DB_USER: ${MYSQL_USER}
             DB_NAME: ${MYSQL_DATABASE}
             DB_PASSWORD: ${MYSQL_PASSWORD}
@@ -24,15 +24,15 @@ services:
             - "traefik.http.middlewares.force_https.redirectscheme.scheme=https"
             - "traefik.http.middlewares.rewrite_url.stripprefix.prefixes=/api"
             - "traefik.http.middlewares.rewrite_url.stripprefix.forceslash=true"
-            # http://$HOST : Redirect to https
-            - 'traefik.http.routers.api.rule=Host(`$HOST`) && (PathPrefix(`/api/`) || PathPrefix(`/admin`) || PathPrefix(`/bundles/`)  || PathPrefix(`/images/`))'
+            # http://$SERVER_NAME : Redirect to https
+            - 'traefik.http.routers.api.rule=Host(`$SERVER_NAME`) && (PathPrefix(`/api/`) || PathPrefix(`/admin`) || PathPrefix(`/bundles/`)  || PathPrefix(`/images/`))'
             - 'traefik.http.routers.api.tls=false'
             - 'traefik.http.routers.api.middlewares=rewrite_url'
             - 'traefik.http.middlewares.api.chain.middlewares=force_https, rewrite_url'
             - 'traefik.http.routers.api.service=api'
             - "traefik.http.services.api.loadbalancer.server.port=80"
-            # https://$HOST
-            - 'traefik.http.routers.api-tls.rule=Host(`$HOST`) && (PathPrefix(`/api/`) || PathPrefix(`/admin`) || PathPrefix(`/bundles/`) || PathPrefix(`/images/`))'
+            # https://$SERVER_NAME
+            - 'traefik.http.routers.api-tls.rule=Host(`$SERVER_NAME`) && (PathPrefix(`/api/`) || PathPrefix(`/admin`) || PathPrefix(`/bundles/`) || PathPrefix(`/images/`))'
             - 'traefik.http.routers.api-tls.tls=true'
             - 'traefik.http.routers.api-tls.middlewares=rewrite_url'
             - "traefik.http.routers.api-tls.tls.certresolver=le"
@@ -63,24 +63,24 @@ services:
         build:
             target: final
             context: .
-            dockerfile: .docker/front/Dockerfile
+            dockerfile: front/Dockerfile
         environment:
-            API_BASE_URL: "http://${HOST}/api"
-            API_PUBLIC_BASE_URL: "https://${HOST}/api"
+            API_BASE_URL: "http://${SERVER_NAME}/api"
+            API_PUBLIC_BASE_URL: "https://${SERVER_NAME}/api"
         labels:
             - "traefik.enable=true"
             - 'traefik.docker.network=sepradcnetwork'
             # Reusable middlewares
             - "traefik.http.middlewares.force_https.redirectscheme.scheme=https"
-            # http://$HOST : Redirect to https
-            - 'traefik.http.routers.front.rule=Host(`$HOST`)'
+            # http://$SERVER_NAME : Redirect to https
+            - 'traefik.http.routers.front.rule=Host(`$SERVER_NAME`)'
             - 'traefik.http.routers.front.tls=false'
             - 'traefik.http.routers.front.middlewares=front'
             - 'traefik.http.middlewares.front.chain.middlewares=force_https'
             - 'traefik.http.routers.front.service=front'
             - "traefik.http.services.front.loadbalancer.server.port=80"
-            # https://$HOST
-            - 'traefik.http.routers.front-tls.rule=Host(`$HOST`)'
+            # https://$SERVER_NAME
+            - 'traefik.http.routers.front-tls.rule=Host(`$SERVER_NAME`)'
             - 'traefik.http.routers.front-tls.tls=true'
             - "traefik.http.routers.front-tls.tls.certresolver=le"
             - 'traefik.http.routers.front-tls.service=front-tls'
