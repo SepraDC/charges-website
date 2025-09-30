@@ -13,18 +13,17 @@ export const useAuth = () => {
 
 	const config = useRuntimeConfig();
 
-	// Initialize auth state from token on client side
-	const initializeAuth = async () => {
-		if (import.meta.client && token.value && !authUser.value) {
-			await verify();
-		}
+	// Clear auth state without navigation
+	const clearAuthState = () => {
+		token.value = null;
+		authUser.value = null;
+		isAuthenticated.value = false;
 	};
 
 	// Verify user with token
 	const verify = async () => {
 		if (!token.value) {
-			authUser.value = null;
-			isAuthenticated.value = false;
+			clearAuthState();
 			return { data: null, error: null };
 		}
 
@@ -42,12 +41,12 @@ export const useAuth = () => {
 				return { data, error: null };
 			} else {
 				// Token is invalid, clear auth state
-				await signOut();
+				clearAuthState();
 				return { data: null, error: "No data received" };
 			}
 		} catch (err) {
 			// Token is invalid, clear auth state
-			await signOut();
+			clearAuthState();
 			return { data: null, error: err };
 		}
 	};
@@ -87,24 +86,14 @@ export const useAuth = () => {
 
 	// Sign out user
 	const signOut = async () => {
-		token.value = null;
-		authUser.value = null;
-		isAuthenticated.value = false;
+		clearAuthState();
 
-		clearNuxtData();
-
-		// Navigate to login
 		await navigateTo("/login");
 	};
 
 	const check = () => {
-		return isAuthenticated.value && !!authUser.value;
+		return isAuthenticated.value && !authUser.value;
 	};
-
-	// Initialize auth on client side
-	if (import.meta.client) {
-		initializeAuth();
-	}
 
 	return {
 		// State
@@ -115,6 +104,5 @@ export const useAuth = () => {
 		signOut,
 		verify,
 		check,
-		initializeAuth,
 	};
 };

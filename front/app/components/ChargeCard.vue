@@ -55,20 +55,19 @@
                 color="error"
                 variant="outline"
                 icon="i-mdi-trash"
-                @click.prevent="confirmPopupOpen = true"
+                @click="confirmPopupOpen = true"
             />
             <UButton
                 color="secondary"
                 variant="outline"
                 icon="i-mdi-edit"
-                @click.prevent="updateChargeOpen = true"
+                @click="updateChargeOpen = true"
             />
         </div>
     </div>
     <teleport to="body">
         <UModal
-            v-model:open="confirmPopupOpen"
-            prevent-close
+            :open="confirmPopupOpen"
             title="Confirmer la suppression ?"
         >
             <template #body>
@@ -78,14 +77,14 @@
                     <UButton
                         size="lg"
                         color="neutral"
-                        @click.prevent="closePopup"
+                        @click="closePopup"
                     >
                         Annuler
                     </UButton>
                     <UButton
                         size="lg"
                         color="error"
-                        @click.prevent="confirmDelete"
+                        @click="confirmDelete"
                     >
                         Confirmer
                     </UButton>
@@ -93,8 +92,7 @@
             </template>
         </UModal>
         <UModal
-            v-model:open="updateChargeOpen"
-            prevent-close
+            :open="updateChargeOpen"
             :title="`Mise à jour: ${charge.name}`"
         >
             <template #body>

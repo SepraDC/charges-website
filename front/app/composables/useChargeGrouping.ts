@@ -6,6 +6,11 @@ export interface GroupedCharge {
 }
 
 export function useChargeGrouping() {
+	const isPassedDate = (day: number) => {
+		const today = new Date().getDate();
+		return today >= day;
+	};
+
 	const groupChargesByDay = (charges: Charge[]): GroupedCharge[] => {
 		if (!charges || charges.length === 0) return [];
 
@@ -27,7 +32,7 @@ export function useChargeGrouping() {
 		// Convert to array and sort by day
 		return Object.entries(grouped)
 			.map(([day, charges]) => ({
-				dayOfWithdrawal: parseInt(day),
+				dayOfWithdrawal: parseInt(day, 10),
 				charges: charges.sort((a, b) => a.name.localeCompare(b.name)),
 			}))
 			.sort((a, b) => a.dayOfWithdrawal - b.dayOfWithdrawal);
@@ -40,5 +45,6 @@ export function useChargeGrouping() {
 	return {
 		groupChargesByDay,
 		formatDayLabel,
+		isPassedDate,
 	};
 }

@@ -15,7 +15,7 @@
                 size="lg"
             />
         </UFormField>
-        <FormField name="bank" required>
+        <UFormField name="bank" required>
             <USelect
                 v-model="chargeState.bank"
                 class="w-full"
@@ -25,7 +25,7 @@
                 placeholder="Banque"
                 value-key="id"
             />
-        </FormField>
+        </UFormField>
         <UFormField name="chargeType" required>
             <USelect
                 v-model="chargeState.chargeType"
@@ -37,7 +37,7 @@
             />
         </UFormField>
         <div class="grid grid-cols-2 gap-3">
-            <UFormField name="dayOfWithdrawal" required>
+            <UFormField name="dayOfWithdrawal">
                 <UInput
                     v-model="chargeState.dayOfWithdrawal"
                     class="w-full"
@@ -48,7 +48,7 @@
                     max="31"
                 />
             </UFormField>
-            <FormField name="amount">
+            <UFormField name="amount">
                 <UInput
                     v-model="chargeState.amount"
                     trailing-icon="i-mdi-euro"
@@ -59,7 +59,7 @@
                     placeholder="Montant (100€)"
                     type="number"
                 />
-            </FormField>
+            </UFormField>
         </div>
         <div class="flex w-full items-center justify-center">
             <UButton
@@ -98,7 +98,7 @@ const chargeSchema = z
 		state: z.boolean(),
 		bank: z.string(),
 		chargeType: z.string(),
-		dayOfWithdrawal: z.number().min(1).max(31).optional(),
+		dayOfWithdrawal: z.number().min(1).max(31),
 	})
 	.required();
 

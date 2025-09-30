@@ -118,7 +118,7 @@
             <template v-if="displayList">
                 <template v-for="group in groupedCharges" :key="group.dayOfWithdrawal">
                     <USeparator>
-                       <UBadge variant="soft" :label="formatDayLabel(group.dayOfWithdrawal)" />
+                       <UBadge :color="isPassedDate(group.dayOfWithdrawal) ? 'neutral' : 'primary' " variant="soft" :label="formatDayLabel(group.dayOfWithdrawal)" />
                     </USeparator>
                     <LazyChargeCard
                         v-for="charge in group.charges"
@@ -157,9 +157,7 @@ const api = useApiRoutes();
 const displayList = ref(true);
 const createChargeOpen = ref(false);
 const toast = useToast();
-const { groupChargesByDay, formatDayLabel } = useChargeGrouping();
-
-// Auth state is automatically managed by the composable
+const { groupChargesByDay, formatDayLabel, isPassedDate } = useChargeGrouping();
 
 const query = ref();
 const { data, error, refresh } = await useAsyncData("userDatas", async () => {
@@ -169,10 +167,6 @@ const { data, error, refresh } = await useAsyncData("userDatas", async () => {
 	]);
 	return { userBanks, charges };
 });
-
-if (data.value?.userBanks && data.value.userBanks.length > 0) {
-	query.value = { "bank.id": data.value.userBanks[0]?.id };
-}
 
 const sum = computed(() => {
 	return data.value?.charges

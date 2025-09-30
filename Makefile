@@ -35,7 +35,7 @@ db-dump: ## Dump database schema
 
 .PHONY: api
 api: ## Enter php container
-	docker compose exec -u app api sh -l
+	docker compose exec api bash -l
 
 api-lint al: # Fix error linter
 	docker pull $(PHPQA_IMAGE)
