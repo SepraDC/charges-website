@@ -14,31 +14,33 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-#[ApiResource(
-    operations: [
-        new Post(security: "is_granted('ROLE_ADMIN')"),
-        new Put(security: "is_granted('ROLE_ADMIN')"),
-        new Get(normalizationContext: ['groups' => 'user:readChargeTypeItem']),
-        new GetCollection(normalizationContext: ['groups' => 'user:readChargeTypeList']),
-        new Delete(security: "is_granted('ROLE_ADMIN')")
-    ],
-    order: ['name' => 'ASC'],
-    paginationEnabled: false,
-)]
+#[ApiResource(operations: [new GetCollection()])]
 #[ORM\Entity(repositoryClass: ChargeTypeRepository::class)]
 class ChargeType
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: "integer")]
     #[Groups(["user:readChargeTypeList", "user:readChargeTypeItem"])]
     private ?int $id;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["user:readChargeTypeList", "user:readChargeTypeItem", "user:chargeList"])]
+    #[ORM\Column(type: "string", length: 255)]
+    #[
+        Groups([
+            "user:readChargeTypeList",
+            "user:readChargeTypeItem",
+            "user:chargeList",
+        ]),
+    ]
     private ?string $name;
 
-    #[ORM\OneToMany(mappedBy: 'chargeType', targetEntity: Charge::class, orphanRemoval: true)]
+    #[
+        ORM\OneToMany(
+            mappedBy: "chargeType",
+            targetEntity: Charge::class,
+            orphanRemoval: true,
+        ),
+    ]
     private Collection $charges;
 
     public function __construct()
@@ -84,7 +86,10 @@ class ChargeType
     public function removeCharge(Charge $charge): self
     {
         // set the owning side to null (unless already changed)
-        if ($this->charges->removeElement($charge) && $charge->getChargeType() === $this) {
+        if (
+            $this->charges->removeElement($charge) &&
+            $charge->getChargeType() === $this
+        ) {
             $charge->setChargeType(null);
         }
 

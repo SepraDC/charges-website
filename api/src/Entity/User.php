@@ -4,81 +4,69 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Delete;
-use App\Dto\UserCreateDto;
 use App\Repository\UserRepository;
-use Doctrine\Common\Collections\ArrayCollection;
+use App\State\UserVerifyProvider;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
-use App\State\UserVerifyProvider;
 
+#[
+    ApiResource(
+        operations: [
+            new Get(),
+            new Get(
+                uriTemplate: "/verify",
+                normalizationContext: ["groups" => "user:verify"],
+                provider: UserVerifyProvider::class,
+            ),
+        ],
+    ),
+]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ApiResource(
-    operations: [
-        new Get(normalizationContext: ['groups' => 'user:readUserItem']),
-        new GetCollection(normalizationContext: ['groups' => 'user:readUserList']),
-        new Post(normalizationContext: ['groups' => 'user:readUserItem'], security: 'is_granted("ROLE_ADMIN")', input: UserCreateDto::class),
-        new Put(normalizationContext: ['groups' => 'user:readUserItem'], security: 'is_granted("ROLE_ADMIN")'),
-        new Delete(security: 'is_granted("ROLE_ADMIN")'),
-        new Get(uriTemplate: "/verify", provider: UserVerifyProvider::class, normalizationContext: ['groups' => 'user:verify'] )
-    ],
-    order: ['username' => 'ASC'],
-    paginationEnabled: false,
-)]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_USERNAME', fields: ['username'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    #[Groups(['user:readUserItem', 'user:readUserList', 'user:verify'])]
-    private ?int $id;
+    #[ORM\Column]
+    #[Groups(["user:readUserItem", "user:readUserList", "user:verify"])]
+    private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 180, unique: true)]
-    #[Groups(['user:readUserItem', 'user:readUserList'])]
-    private string $username;
+    #[ORM\Column(length: 180)]
+    #[Groups(["user:readUserItem", "user:readUserList"])]
+    private ?string $username = null;
 
-    #[ORM\Column(type: 'json')]
-    #[Groups(['user:readUserItem', 'user:readUserList', 'user:verify'])]
+    /**
+     * @var list<string> The user roles
+     */
+    #[ORM\Column]
+    #[Groups(["user:readUserItem", "user:readUserList", "user:verify"])]
     private array $roles = [];
+
+    #[ORM\OneToMany(mappedBy: "user", targetEntity: Charge::class)]
+    private Collection $charges;
 
     /**
      * @var string The hashed password
      */
-    #[ORM\Column(type: 'string')]
-    private string $password;
+    #[ORM\Column]
+    private ?string $password = null;
 
-    /**
-     * @see UserPasswordSubscriber
-     */
     private ?string $plainPassword;
-
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Charge::class)]
-    private Collection $charges;
-
-    public function __construct()
-    {
-        $this->charges = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId(?int $id): self
+    public function getUsername(): ?string
     {
-        $this->id = $id;
-        return $this;
+        return $this->username;
     }
 
-
-    public function setUserIdentifier(string $username): self
+    public function setUsername(string $username): static
     {
         $this->username = $username;
 
@@ -90,7 +78,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *
      * @see UserInterface
      */
-    #[Groups(['user:verify'])]
+    #[Groups(["user:verify"])]
     public function getUserIdentifier(): string
     {
         return (string) $this->username;
@@ -108,7 +96,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return array_unique($roles);
     }
 
-    public function setRoles(array $roles): self
+    /**
+     * @param list<string> $roles
+     */
+    public function setRoles(array $roles): static
     {
         $this->roles = $roles;
 
@@ -118,35 +109,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @see PasswordAuthenticatedUserInterface
      */
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return $this->password;
     }
 
-    public function setPassword(string $password): self
+    public function setPassword(string $password): static
     {
         $this->password = $password;
 
         return $this;
-    }
-
-    /**
-     * Returning a salt is only needed, if you are not using a modern
-     * hashing algorithm (e.g. bcrypt or sodium) in your security.yaml.
-     *
-     * @see UserInterface
-     */
-    public function getSalt(): ?string
-    {
-        return null;
-    }
-
-    /**
-     * @see UserInterface
-     */
-    public function eraseCredentials()
-    {
-         $this->plainPassword = null;
     }
 
     /**
@@ -170,28 +142,41 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeCharge(Charge $charge): self
     {
         // set the owning side to null (unless already changed)
-        if ($this->charges->removeElement($charge) && $charge->getUser() === $this) {
+        if (
+            $this->charges->removeElement($charge) &&
+            $charge->getUser() === $this
+        ) {
             $charge->setUser(null);
         }
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getPlainPassword():?string
+    public function setPlainPassword(?string $plainPassword): void
+    {
+        $this->plainPassword = $plainPassword;
+    }
+
+    public function getPlainPassword(): ?string
     {
         return $this->plainPassword;
     }
 
-    /**
-     * @param mixed $plainPassword
-     */
-    public function setPlainPassword(?string $plainPassword): self
-    {
-        $this->plainPassword = $plainPassword;
 
-        return $this;
+    /**
+     * Ensure the session doesn't contain actual password hashes by CRC32C-hashing them, as supported since Symfony 7.3.
+     */
+    public function __serialize(): array
+    {
+        $data = (array) $this;
+        $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
+
+        return $data;
+    }
+
+    #[\Deprecated]
+    public function eraseCredentials(): void
+    {
+        // @deprecated, to be removed when upgrading to Symfony 8
     }
 }

@@ -4,7 +4,6 @@ namespace App\Controller\Admin;
 
 use App\Entity\Bank;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Vich\UploaderBundle\Form\Type\VichImageType;
 use Vich\UploaderBundle\Storage\StorageInterface;

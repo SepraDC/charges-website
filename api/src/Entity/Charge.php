@@ -15,6 +15,7 @@ use App\Repository\ChargeRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     operations: [
@@ -25,9 +26,7 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
         new Patch(uriTemplate: '/charges/reset', controller: ResetChargesController::class, security: "is_granted('ROLE_USER')", read: false),
         new Patch(security: "is_granted('ROLE_USER') and object.user == user" ),
         new Delete(security: "is_granted('ROLE_USER') and object.user == user"),
-    ],
-    order: ['name' => 'ASC'],
-    paginationEnabled: false,
+    ]
 )]
 #[ApiFilter(SearchFilter::class, properties: ["bank.id" => "exact"])]
 #[ORM\Entity(repositoryClass: ChargeRepository::class)]
@@ -41,10 +40,12 @@ class Charge
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups(['user:chargeList', 'user:chargeItem'])]
+    #[Assert\NotBlank]
     private ?string $name;
 
     #[ORM\Column(type: 'decimal', precision: 5, scale: 2)]
     #[Groups(['user:chargeList', 'user:chargeItem'])]
+    #[Assert\GreaterThan(0)]
     private ?float $amount;
 
     #[ORM\Column(type: 'boolean')]
@@ -61,9 +62,10 @@ class Charge
     #[Groups(['user:chargeList', 'user:chargeItem'])]
     private ?ChargeType $chargeType;
 
-    #[ORM\Column(type: 'date', nullable: true)]
+    #[ORM\Column(type: 'integer', nullable: true)]
     #[Groups(['user:chargeList', 'user:chargeItem'])]
-    private ?\DateTimeInterface $date;
+    #[Assert\Range(min: 1, max: 31)]
+    private ?int $dayOfWithdrawal;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'charges')]
     public ?User $user;
@@ -133,14 +135,14 @@ class Charge
         return $this;
     }
 
-    public function getDate(): ?\DateTimeInterface
+    public function getDayOfWithdrawal(): ?int
     {
-        return $this->date;
+        return $this->dayOfWithdrawal;
     }
 
-    public function setDate(?\DateTimeInterface $date): self
+    public function setDayOfWithdrawal(?int $dayOfWithdrawal): self
     {
-        $this->date = $date;
+        $this->dayOfWithdrawal = $dayOfWithdrawal;
 
         return $this;
     }

@@ -2,37 +2,23 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Link;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Delete;
 use App\Controller\BanksByUserController;
 use App\Repository\BankRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use ApiPlatform\Metadata\ApiResource;
 
 #[ApiResource(
-    uriTemplate: '/banks/user',
-    operations: [new GetCollection(controller: BanksByUserController::class, normalizationContext: ['groups' => 'user:readBankList'])],
-)]
-#[ApiResource(
     operations: [
-        new Post(security: "is_granted('ROLE_ADMIN')"),
-        new Put(security: "is_granted('ROLE_ADMIN')"),
-        new Delete(security: "is_granted('ROLE_ADMIN')"),
-        new Get(normalizationContext: ['groups' => 'user:readBankItem']),
+        new GetCollection(uriTemplate: '/banks/user', controller: BanksByUserController::class, normalizationContext: ['groups' => 'user:readBankList']),
         new GetCollection(normalizationContext: ['groups' => 'user:readBankList'])
-    ],
-    order: ['name' => 'ASC'],
-    paginationEnabled: false,
+    ]
 )]
 #[ORM\Entity(repositoryClass: BankRepository::class)]
 #[Vich\Uploadable]
@@ -65,7 +51,12 @@ class Bank
     #[ORM\Column(nullable: true)]
     private ?string $imageSize = null;
 
-
+    /**
+     * Virtual property for image URL
+     */
+    #[Groups(['user:readBankList', 'user:readBankItem'])]
+    #[SerializedName('image')]
+    private ?string $imageUrl = null;
 
     public function __construct()
     {
@@ -160,5 +151,16 @@ class Bank
     public function getImageSize(): ?int
     {
         return $this->imageSize;
+    }
+
+    public function getImageUrl(): ?string
+    {
+        return $this->imageUrl;
+    }
+
+    public function setImageUrl(?string $imageUrl): self
+    {
+        $this->imageUrl = $imageUrl;
+        return $this;
     }
 }
