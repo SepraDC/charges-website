@@ -10,7 +10,7 @@ services:
           - caddy_config:/config
         environment:
             APP_ENV: prod
-            SERVER_NAME: "http://php:80"
+            SERVER_NAME: ":80"
             CADDY_GLOBAL_OPTIONS: |
               auto_https off
             APP_UID: ${APP_UID:-1000}
