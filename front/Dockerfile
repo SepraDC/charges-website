@@ -1,4 +1,4 @@
-FROM node:22-alpine AS base
+FROM node:24-alpine AS base
 RUN npm install -g pnpm
 WORKDIR /srv/app
 COPY . .
@@ -13,13 +13,12 @@ EXPOSE 3000
 CMD ["pnpm", "run", "dev"]
 
 FROM base AS build
-COPY . /srv/app
-RUN pnpm install && pnpm build
+RUN pnpm build
 
-FROM node:22-alpine AS final
+FROM node:24-alpine AS prod
+WORKDIR /srv/app
 COPY --from=build /srv/app/.output /srv/app
 ENV PORT=80
+ENV HOST=0.0.0.0
 EXPOSE 80
-ENTRYPOINT [""]
-WORKDIR /srv/app/server
-CMD ["node", "index.mjs"]
+CMD ["node", "/srv/app/server/index.mjs"]

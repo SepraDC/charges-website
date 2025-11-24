@@ -8,17 +8,15 @@ services:
     depends_on:
       - db
     environment:
-      SERVER_NAME: ${SERVER_NAME:-charge.local}
+      HOST: ${HOST}
+      SERVER_NAME: api.${HOST:-localhost}, http://php:80
       FRANKENPHP_WORKER_CONFIG: watch
-      MERCURE_EXTRA_DIRECTIVES: demo
       XDEBUG_MODE: "${XDEBUG_MODE:-off}"
       APP_ENV: "${APP_ENV:-dev}"
-      MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
-      MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       # Run "composer require symfony/orm-pack" to install and configure Doctrine ORM
       DATABASE_URL: ${DATABASE_URL}
+      CADDY_GLOBAL_OPTIONS: ""
     extra_hosts:
-      # Ensure that host.docker.internal is correctly defined on Linux
       - host.docker.internal:host-gateway
     tty: false
     volumes:
@@ -27,23 +25,19 @@ services:
       - ./api/conf.d/20-app.dev.ini:/usr/local/etc/php/app.conf.d/20-app.dev.ini:ro
       - caddy_data:/data
       - caddy_config:/config
-    networks:
-      default:
     ports:
-      # HTTP
-      - target: 80
+      - name: http
+        target: 80
         published: ${HTTP_PORT:-80}
         protocol: tcp
-      # HTTPS
-      - target: 443
+      - name: https
+        target: 443
         published: ${HTTPS_PORT:-443}
         protocol: tcp
-      # HTTP/3
-      - target: 443
+      - name: http3
+        target: 443
         published: ${HTTP3_PORT:-443}
         protocol: udp
-      # WebSocket port
-      - "24678:24678"
 
   db:
     image: mariadb:10.5.5
@@ -66,8 +60,6 @@ services:
       NUXT_PUBLIC_API_BASE_URL: ${NUXT_PUBLIC_API_BASE_URL}
     volumes:
       - ./front:/srv/app
-    networks:
-      default:
 
 volumes:
   mysql_database:

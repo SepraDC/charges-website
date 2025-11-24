@@ -1,29 +1,23 @@
 {
-	skip_install_trust
+    skip_install_trust
+    local_certs
 
-	{$CADDY_GLOBAL_OPTIONS}
+{$CADDY_GLOBAL_OPTIONS}
+}
 
-	frankenphp {
-		{$FRANKENPHP_CONFIG}
-
-		worker {
-			file ./public/index.php
-			env APP_RUNTIME Runtime\FrankenPhpSymfony\Runtime
-			{$FRANKENPHP_WORKER_CONFIG}
-		}
-	}
+frankenphp {
+        {$FRANKENPHP_CONFIG}
 }
 
 {$CADDY_EXTRA_CONFIG}
 
-# Frontend reverse proxy
-{$SERVER_NAME:localhost} {
+{$HOST:localhost} {
     tls internal
     reverse_proxy front:3000
 }
 
 # WebSocket support for frontend
-{$SERVER_NAME:localhost}:24678 {
+{$HOST:localhost}:24678 {
     tls internal
 
     @websockets {
@@ -34,51 +28,52 @@
     reverse_proxy @websockets front:24678
 }
 
-# API endpoint
-api.{$SERVER_NAME:localhost} {
-	log {
-		{$CADDY_SERVER_LOG_OPTIONS}
-		# Redact the authorization query parameter that can be set by Mercure
-		format filter {
-			request>uri query {
-				replace authorization REDACTED
-			}
-		}
-	}
+{$SERVER_NAME:api.localhost} {
+    tls internal
+    
+    log {
+        {$CADDY_SERVER_LOG_OPTIONS}
+        # Redact the authorization query parameter that can be set by Mercure
+        format filter {
+            request>uri query {
+                replace authorization REDACTED
+            }
+        }
+    }
 
-	root /app/public
-	encode zstd br gzip
+    root /app/public
+    encode zstd br gzip
+#    mercure {
+#        # Publisher JWT key
+#        publisher_jwt {env.MERCURE_PUBLISHER_JWT_KEY} {env.MERCURE_PUBLISHER_JWT_ALG}
+#        # Subscriber JWT key
+#        subscriber_jwt {env.MERCURE_SUBSCRIBER_JWT_KEY} {env.MERCURE_SUBSCRIBER_JWT_ALG}
+#        # Allow anonymous subscribers (double-check that it's what you want)
+#        anonymous
+#        # Enable the subscription API (double-check that it's what you want)
+#        subscriptions
+#        # Extra directives
+#        {$MERCURE_EXTRA_DIRECTIVES}
+#    }
 
-	mercure {
-		# Publisher JWT key
-		publisher_jwt {env.MERCURE_PUBLISHER_JWT_KEY} {env.MERCURE_PUBLISHER_JWT_ALG}
-		# Subscriber JWT key
-		subscriber_jwt {env.MERCURE_SUBSCRIBER_JWT_KEY} {env.MERCURE_SUBSCRIBER_JWT_ALG}
-		# Allow anonymous subscribers (double-check that it's what you want)
-		anonymous
-		# Enable the subscription API (double-check that it's what you want)
-		subscriptions
-		# Extra directives
-		{$MERCURE_EXTRA_DIRECTIVES}
-	}
+    vulcain
 
-	vulcain
+    {$CADDY_SERVER_EXTRA_DIRECTIVES}
 
-	{$CADDY_SERVER_EXTRA_DIRECTIVES}
+    # Disable Topics tracking if not enabled explicitly: https://github.com/jkarlin/topics
+    header ?Permissions-Policy "browsing-topics=()"
 
-	# Disable Topics tracking if not enabled explicitly: https://github.com/jkarlin/topics
-	header ?Permissions-Policy "browsing-topics=()"
+    @phpRoute {
+        not path /.well-known/mercure*
+        not file {path}
+    }
+    rewrite @phpRoute index.php
 
-	@phpRoute {
-		not path /.well-known/mercure*
-		not file {path}
-	}
-	rewrite @phpRoute index.php
-
-	@frontController path index.php
-	php @frontController
-
-	file_server {
-		hide *.php
-	}
+    @frontController path index.php
+    php @frontController {
+        env APP_RUNTIME Runtime\FrankenPhpSymfony\Runtime
+    }
+    file_server {
+        hide *.php
+    }
 }

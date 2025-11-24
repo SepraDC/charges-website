@@ -1,4 +1,4 @@
-FROM dunglas/frankenphp:1-php8.4 AS frankenphp_upstream
+FROM dunglas/frankenphp:1-php8.4-alpine AS frankenphp_upstream
 
 # The different stages of this Dockerfile are meant to be built into separate images
 # https://docs.docker.com/develop/develop-images/multistage-build/#stop-at-a-specific-build-stage
@@ -13,13 +13,11 @@ WORKDIR /app
 VOLUME /app/var/
 
 # persistent / runtime deps
-# hadolint ignore=DL3008
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apk add --no-cache \
     acl \
     file \
     gettext \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+    git
 
 RUN set -eux; \
     install-php-extensions \
@@ -33,9 +31,6 @@ RUN set -eux; \
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
 ENV COMPOSER_ALLOW_SUPERUSER=1
-
-# Transport to use by Mercure (default to Bolt)
-ENV MERCURE_TRANSPORT_URL=bolt:///data/mercure.db
 
 ENV PHP_INI_SCAN_DIR=":$PHP_INI_DIR/app.conf.d"
 
@@ -70,7 +65,7 @@ COPY --link conf.d/20-app.dev.ini $PHP_INI_DIR/app.conf.d/
 CMD [ "frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile", "--watch" ]
 
 # Prod FrankenPHP image
-FROM frankenphp_base AS frankenphp_prod
+FROM frankenphp_base AS prod
 
 ENV APP_ENV=prod
 
@@ -85,7 +80,6 @@ RUN set -eux; \
 
 # copy sources
 COPY --link . ./
-# RUN rm -Rf frankenphp/
 
 RUN set -eux; \
     mkdir -p var/cache var/log; \

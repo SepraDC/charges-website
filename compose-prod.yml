@@ -1,22 +1,27 @@
 services:
     api:
-        build:
-            context: .
-            target: final
-            dockerfile: .docker/api/Dockerfile
+        image: registry.sepradc.ovh/charge/api:arm64
+        platform: linux/arm64
+        restart: unless-stopped
         depends_on:
             - db
         volumes:
-            - ./api:/var/www
+          - caddy_data:/data
+          - caddy_config:/config
         environment:
-            XDEBUG_SESSION: debug-local
             APP_ENV: prod
-            SERVER_NAME: ${SERVER_NAME}
+            SERVER_NAME: "http://php:80"
+            CADDY_GLOBAL_OPTIONS: |
+              auto_https off
             APP_UID: ${APP_UID:-1000}
-            CORS_ALLOW_ORIGIN: "^(https?://(?:.+\\.)?${SERVER_NAME}(?::\\d{1,5})?)$$"
-            DB_USER: ${MYSQL_USER}
-            DB_NAME: ${MYSQL_DATABASE}
-            DB_PASSWORD: ${MYSQL_PASSWORD}
+            CORS_ALLOW_ORIGIN: "^(https?://(?:.+\\.)?${HOST}(?::\\d{1,5})?)$$"
+            DATABASE_URL: ${DATABASE_URL}
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:2019/metrics"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 60s
         labels:
             - "traefik.enable=true"
             - 'traefik.docker.network=sepradcnetwork'
@@ -24,15 +29,15 @@ services:
             - "traefik.http.middlewares.force_https.redirectscheme.scheme=https"
             - "traefik.http.middlewares.rewrite_url.stripprefix.prefixes=/api"
             - "traefik.http.middlewares.rewrite_url.stripprefix.forceslash=true"
-            # http://$SERVER_NAME : Redirect to https
-            - 'traefik.http.routers.api.rule=Host(`$SERVER_NAME`) && (PathPrefix(`/api/`) || PathPrefix(`/admin`) || PathPrefix(`/bundles/`)  || PathPrefix(`/images/`))'
+            # http://${HOST} : Redirect to https
+            - 'traefik.http.routers.api.rule=Host(`${HOST}`) && (PathPrefix(`/api/`) || PathPrefix(`/admin`) || PathPrefix(`/bundles/`)  || PathPrefix(`/images/`))'
             - 'traefik.http.routers.api.tls=false'
             - 'traefik.http.routers.api.middlewares=rewrite_url'
             - 'traefik.http.middlewares.api.chain.middlewares=force_https, rewrite_url'
             - 'traefik.http.routers.api.service=api'
             - "traefik.http.services.api.loadbalancer.server.port=80"
-            # https://$SERVER_NAME
-            - 'traefik.http.routers.api-tls.rule=Host(`$SERVER_NAME`) && (PathPrefix(`/api/`) || PathPrefix(`/admin`) || PathPrefix(`/bundles/`) || PathPrefix(`/images/`))'
+            # https://${HOST}
+            - 'traefik.http.routers.api-tls.rule=Host(`${HOST}`) && (PathPrefix(`/api/`) || PathPrefix(`/admin`) || PathPrefix(`/bundles/`) || PathPrefix(`/images/`))'
             - 'traefik.http.routers.api-tls.tls=true'
             - 'traefik.http.routers.api-tls.middlewares=rewrite_url'
             - "traefik.http.routers.api-tls.tls.certresolver=le"
@@ -41,9 +46,9 @@ services:
             - 'traefik.http.middlewares.api-tls.chain.middlewares=rewrite_url'
         networks:
             sepradcnetwork:
-            default:
     db:
         image: mariadb:10.5.5
+        platform: linux/arm64
         restart: unless-stopped
         environment:
             MYSQL_DATABASE: ${MYSQL_DATABASE:-charges-website}
@@ -53,41 +58,48 @@ services:
             TZ: ${TZ:-Europe/Paris}
         volumes:
             - mysql_database:/var/lib/mysql
-        ports:
-            - "3306:3306"
+        # Port 3306 pas exposé publiquement en prod pour la sécurité
         cap_add:
             - SYS_NICE
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
         networks:
-            default:
+            sepradcnetwork:
     front:
-        build:
-            target: final
-            context: .
-            dockerfile: front/Dockerfile
+        image: registry.sepradc.ovh/charge/front:arm64
+        platform: linux/arm64
+        restart: unless-stopped
         environment:
-            API_BASE_URL: "http://${SERVER_NAME}/api"
-            API_PUBLIC_BASE_URL: "https://${SERVER_NAME}/api"
+            NUXT_PUBLIC_API_BASE_URL: "https://${HOST}/api"
+        healthcheck:
+            test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
         labels:
             - "traefik.enable=true"
             - 'traefik.docker.network=sepradcnetwork'
             # Reusable middlewares
             - "traefik.http.middlewares.force_https.redirectscheme.scheme=https"
-            # http://$SERVER_NAME : Redirect to https
-            - 'traefik.http.routers.front.rule=Host(`$SERVER_NAME`)'
+            # http://${HOST} : Redirect to https
+            - 'traefik.http.routers.front.rule=Host(`${HOST}`)'
             - 'traefik.http.routers.front.tls=false'
             - 'traefik.http.routers.front.middlewares=front'
             - 'traefik.http.middlewares.front.chain.middlewares=force_https'
             - 'traefik.http.routers.front.service=front'
             - "traefik.http.services.front.loadbalancer.server.port=80"
-            # https://$SERVER_NAME
-            - 'traefik.http.routers.front-tls.rule=Host(`$SERVER_NAME`)'
+            # https://${HOST}
+            - 'traefik.http.routers.front-tls.rule=Host(`${HOST}`)'
             - 'traefik.http.routers.front-tls.tls=true'
             - "traefik.http.routers.front-tls.tls.certresolver=le"
             - 'traefik.http.routers.front-tls.service=front-tls'
             - "traefik.http.services.front-tls.loadbalancer.server.port=80"
         networks:
             sepradcnetwork:
-            default:
+
 volumes:
     mysql_database:
     caddy_data:
