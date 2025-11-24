@@ -33,12 +33,14 @@ services:
             # http://${HOST} : Redirect to https
             - "traefik.http.routers.charges-api.rule=Host(`${HOST}`) && (PathPrefix(`/api/`) || PathPrefix(`/admin`) || PathPrefix(`/bundles/`)  || PathPrefix(`/images/`))"
             - "traefik.http.routers.charges-api.entrypoints=web"
+            - "traefik.http.routers.charges-api.priority=100"
             - "traefik.http.routers.charges-api.middlewares=charges-force-https"
             - "traefik.http.routers.charges-api.service=charges-api"
             - "traefik.http.services.charges-api.loadbalancer.server.port=80"
             # https://${HOST}
             - "traefik.http.routers.charges-api-tls.rule=Host(`${HOST}`) && (PathPrefix(`/api/`) || PathPrefix(`/admin`) || PathPrefix(`/bundles/`) || PathPrefix(`/images/`))"
             - "traefik.http.routers.charges-api-tls.entrypoints=websecure"
+            - "traefik.http.routers.charges-api-tls.priority=100"
             - "traefik.http.routers.charges-api-tls.tls=true"
             - "traefik.http.routers.charges-api-tls.tls.certresolver=le"
             - "traefik.http.routers.charges-api-tls.middlewares=charges-rewrite-api"
