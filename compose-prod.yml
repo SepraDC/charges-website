@@ -27,27 +27,27 @@ services:
             - 'traefik.docker.network=sepradcnetwork'
             # Reusable middlewares
             - "traefik.http.middlewares.force_https.redirectscheme.scheme=https"
+            - "traefik.http.middlewares.force_https.redirectscheme.permanent=true"
             - "traefik.http.middlewares.rewrite_url.stripprefix.prefixes=/api"
-            - "traefik.http.middlewares.rewrite_url.stripprefix.forceslash=true"
+            - "traefik.http.middlewares.rewrite_url.stripprefix.forceslash=false"
             # http://${HOST} : Redirect to https
-            - 'traefik.http.routers.api.rule=Host(`${HOST}`) && (PathPrefix(`/api/`) || PathPrefix(`/admin`) || PathPrefix(`/bundles/`)  || PathPrefix(`/images/`))'
-            - 'traefik.http.routers.api.tls=false'
-            - 'traefik.http.routers.api.middlewares=rewrite_url'
-            - 'traefik.http.middlewares.api.chain.middlewares=force_https, rewrite_url'
-            - 'traefik.http.routers.api.service=api'
+            - "traefik.http.routers.api.rule=Host(`${HOST}`) && (PathPrefix(`/api/`) || PathPrefix(`/admin`) || PathPrefix(`/bundles/`)  || PathPrefix(`/images/`))"
+            - "traefik.http.routers.api.entrypoints=web"
+            - "traefik.http.routers.api.middlewares=force_https"
+            - "traefik.http.routers.api.service=api"
             - "traefik.http.services.api.loadbalancer.server.port=80"
             # https://${HOST}
-            - 'traefik.http.routers.api-tls.rule=Host(`${HOST}`) && (PathPrefix(`/api/`) || PathPrefix(`/admin`) || PathPrefix(`/bundles/`) || PathPrefix(`/images/`))'
-            - 'traefik.http.routers.api-tls.tls=true'
-            - 'traefik.http.routers.api-tls.middlewares=rewrite_url'
+            - "traefik.http.routers.api-tls.rule=Host(`${HOST}`) && (PathPrefix(`/api/`) || PathPrefix(`/admin`) || PathPrefix(`/bundles/`) || PathPrefix(`/images/`))"
+            - "traefik.http.routers.api-tls.entrypoints=websecure"
+            - "traefik.http.routers.api-tls.tls=true"
             - "traefik.http.routers.api-tls.tls.certresolver=le"
-            - 'traefik.http.routers.api-tls.service=api-tls'
+            - "traefik.http.routers.api-tls.middlewares=rewrite_url"
+            - "traefik.http.routers.api-tls.service=api-tls"
             - "traefik.http.services.api-tls.loadbalancer.server.port=80"
-            - 'traefik.http.middlewares.api-tls.chain.middlewares=rewrite_url'
         networks:
             sepradcnetwork:
     db:
-        image: mariadb:10.5.5
+        image: mariadb:11.6
         platform: linux/arm64
         restart: unless-stopped
         environment:
@@ -81,21 +81,22 @@ services:
             retries: 3
         labels:
             - "traefik.enable=true"
-            - 'traefik.docker.network=sepradcnetwork'
+            - "traefik.docker.network=sepradcnetwork"
             # Reusable middlewares
             - "traefik.http.middlewares.force_https.redirectscheme.scheme=https"
+            - "traefik.http.middlewares.force_https.redirectscheme.permanent=true"
             # http://${HOST} : Redirect to https
-            - 'traefik.http.routers.front.rule=Host(`${HOST}`)'
-            - 'traefik.http.routers.front.tls=false'
-            - 'traefik.http.routers.front.middlewares=front'
-            - 'traefik.http.middlewares.front.chain.middlewares=force_https'
-            - 'traefik.http.routers.front.service=front'
+            - "traefik.http.routers.front.rule=Host(`${HOST}`)"
+            - "traefik.http.routers.front.entrypoints=web"
+            - "traefik.http.routers.front.middlewares=force_https"
+            - "traefik.http.routers.front.service=front"
             - "traefik.http.services.front.loadbalancer.server.port=80"
             # https://${HOST}
-            - 'traefik.http.routers.front-tls.rule=Host(`${HOST}`)'
-            - 'traefik.http.routers.front-tls.tls=true'
+            - "traefik.http.routers.front-tls.rule=Host(`${HOST}`)"
+            - "traefik.http.routers.front-tls.entrypoints=websecure"
+            - "traefik.http.routers.front-tls.tls=true"
             - "traefik.http.routers.front-tls.tls.certresolver=le"
-            - 'traefik.http.routers.front-tls.service=front-tls'
+            - "traefik.http.routers.front-tls.service=front-tls"
             - "traefik.http.services.front-tls.loadbalancer.server.port=80"
         networks:
             sepradcnetwork:

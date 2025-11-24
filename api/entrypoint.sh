@@ -32,9 +32,18 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 			echo 'The database is now ready and reachable'
 		fi
 
-		if [ "$(find ./migrations -iname '*.php' -print -quit)" ]; then
-			php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing
+	if [ "$(find ./migrations -iname '*.php' -print -quit)" ]; then
+		# Check if migration table exists but is empty (existing DB without migration history)
+		MIGRATION_COUNT=$(php bin/console dbal:run-sql -q "SELECT COUNT(*) as count FROM doctrine_migration_versions" 2>/dev/null | tail -n 1 || echo "error")
+		
+		if [ "$MIGRATION_COUNT" = "0" ]; then
+			echo "Existing database detected without migration history. Marking all migrations as executed..."
+			php bin/console doctrine:migrations:version --add --all --no-interaction
+		else
+			echo "Running migrations..."
+			php bin/console doctrine:migrations:migrate --no-interaction
 		fi
+	fi
 	fi
 
 	echo 'PHP app ready!'
