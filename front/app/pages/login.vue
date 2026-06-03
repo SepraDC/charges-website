@@ -37,7 +37,13 @@
                     <p v-if="errorLogin" class="text-red-600">
                         {{ errorLogin }}
                     </p>
-                    <div class="flex w-full items-center justify-center">
+                    <div class="flex w-full items-center justify-between">
+                        <NuxtLink
+                            to="/forgot-password"
+                            class="text-sm text-orange-300 hover:underline"
+                        >
+                            Mot de passe oublié ?
+                        </NuxtLink>
                         <UButton type="submit" label="Connexion" />
                     </div>
                 </UForm>

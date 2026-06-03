@@ -9,13 +9,16 @@ services:
           - caddy_data:/data
           - caddy_config:/config
         environment:
-            APP_ENV: prod
+            HOST: ${HOST}
             SERVER_NAME: ":80"
             CADDY_GLOBAL_OPTIONS: |
               auto_https off
             APP_UID: ${APP_UID:-1000}
             CORS_ALLOW_ORIGIN: "^(https?://(?:.+\\.)?${HOST}(?::\\d{1,5})?)$$"
             DATABASE_URL: ${DATABASE_URL}
+            MAILER_DSN: ${MAILER_DSN}
+            MAILER_FROM: ${MAILER_FROM}
+            FRONTEND_URL: ${FRONTEND_URL}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:2019/metrics"]
             interval: 30s

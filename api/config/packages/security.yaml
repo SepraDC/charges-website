@@ -12,6 +12,9 @@ security:
     dev:
       pattern: ^/(_(profiler|wdt)|css|images|js)/
       security: false
+    password_reset:
+      pattern: ^/(forgot|reset)-password$
+      security: false
     admin:
       lazy: true
       pattern: ^/admin
@@ -38,6 +41,8 @@ security:
   access_control:
     - { path: ^/admin/login$, roles: PUBLIC_ACCESS }
     - { path: ^/auth, roles: PUBLIC_ACCESS }
+    - { path: ^/forgot-password$, roles: PUBLIC_ACCESS }
+    - { path: ^/reset-password$, roles: PUBLIC_ACCESS }
     - { path: ^/admin/$, roles: ROLE_ADMIN }
     - { path: ^/docs$, roles: ROLE_ADMIN }
     - { path: ^/$, roles: PUBLIC_ACCESS }

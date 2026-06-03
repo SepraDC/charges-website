@@ -172,6 +172,12 @@ export const useApiRoutes = () => {
 			get: get<ChargeType>(),
 			getCollection: getCollection<ChargeType>(),
 		})),
+		password: {
+			forgotPassword: (email: string) =>
+				api("/forgot-password", { method: "POST", body: { email } }),
+			resetPassword: (token: string, password: string) =>
+				api("/reset-password", { method: "POST", body: { token, password } }),
+		},
 	};
 };
 
