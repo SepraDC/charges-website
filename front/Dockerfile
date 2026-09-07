@@ -1,5 +1,5 @@
 FROM node:24-alpine AS base
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9.14.4
 WORKDIR /srv/app
 COPY . .
 RUN pnpm install

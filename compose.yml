@@ -64,6 +64,8 @@ services:
       NUXT_PUBLIC_API_BASE_URL: ${NUXT_PUBLIC_API_BASE_URL}
     volumes:
       - ./front:/srv/app
+      # Volume anonyme : garde le node_modules de l'image, non masqué par le bind mount
+      - /srv/app/node_modules
 
   mailpit:
     image: axllent/mailpit:latest
