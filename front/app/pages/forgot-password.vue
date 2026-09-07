@@ -56,10 +56,14 @@ import { z } from "zod";
 import { definePageMeta } from "#imports";
 
 definePageMeta({
-	auth: {
-		unauthenticatedOnly: true,
-		navigateAuthenticatedTo: "/",
-	},
+	middleware: ["guest"],
+});
+
+useSeoMeta({
+	title: "Mot de passe oublié · Prélèvements",
+	description:
+		"Réinitialisation du mot de passe de votre compte de suivi de prélèvements.",
+	robots: "noindex, follow",
 });
 
 const api = useApiRoutes();

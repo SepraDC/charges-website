@@ -44,8 +44,13 @@
                         >
                             Mot de passe oublié ?
                         </NuxtLink>
-                        <UButton type="submit" label="Connexion" />
+                        <UCheckbox
+                            v-model="state.remember_me"
+                            label="Se souvenir de moi"
+                            class="text-sm"
+                        />
                     </div>
+                    <UButton type="submit" label="Connexion" class="w-full justify-center" />
                 </UForm>
             </div>
         </div>
@@ -53,29 +58,40 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
+import { computed, reactive } from "vue";
 import { z } from "zod";
 import { definePageMeta } from "#imports";
 import { useAuth } from "../composables/auth";
+import { sanitizeRedirect } from "../utils/redirect";
 
 definePageMeta({
-	auth: {
-		unauthenticatedOnly: true,
-		navigateAuthenticatedTo: "/",
-	},
+	middleware: ["guest"],
+});
+
+useSeoMeta({
+	title: "Connexion · Prélèvements",
+	description:
+		"Page de connexion au suivi personnel de prélèvements. Service indépendant, sans lien avec une banque.",
+	robots: "noindex, follow",
 });
 
 const { signIn } = useAuth();
+const route = useRoute();
 const form = ref();
+
+// Where the auth middleware sent us from, so we land back on the wanted page
+const callbackUrl = computed(() => sanitizeRedirect(route.query.redirect));
 
 const schema = z.object({
 	username: z.string(),
 	password: z.string().min(8),
+	remember_me: z.boolean().optional(),
 });
 
 const state = reactive({
 	username: "",
 	password: "",
+	remember_me: false,
 });
 
 const errorLogin = ref();
@@ -84,7 +100,7 @@ const submitForm = async () => {
 	const isFormCorrect = schema.safeParse(state).success;
 	if (!isFormCorrect) return;
 
-	const { error } = await signIn(state, { callbackUrl: "/" });
+	const { error } = await signIn(state, { callbackUrl: callbackUrl.value });
 
 	if (error) {
 		errorLogin.value =

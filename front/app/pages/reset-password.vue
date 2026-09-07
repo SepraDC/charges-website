@@ -76,13 +76,14 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import { z } from "zod";
-import { definePageMeta } from "#imports";
 
-definePageMeta({
-	auth: {
-		unauthenticatedOnly: true,
-		navigateAuthenticatedTo: "/",
-	},
+// No guest middleware here on purpose: a reset link comes from an email and
+// must work even when a session is already open.
+useSeoMeta({
+	title: "Nouveau mot de passe · Prélèvements",
+	description:
+		"Définissez un nouveau mot de passe pour votre compte de suivi de prélèvements.",
+	robots: "noindex, follow",
 });
 
 const route = useRoute();
