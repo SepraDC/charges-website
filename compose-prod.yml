@@ -79,6 +79,7 @@ services:
         restart: unless-stopped
         environment:
             NUXT_PUBLIC_API_BASE_URL: "https://${HOST}/api"
+            NUXT_PUBLIC_SITE_URL: "https://${HOST}"
         healthcheck:
             test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:80"]
             interval: 30s
