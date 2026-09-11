@@ -1,18 +1,11 @@
-export default defineNuxtRouteMiddleware(async () => {
-	const { verify, check, isAuthenticated } = useAuth();
+import { loginUrlFor } from "../utils/redirect";
 
-	// If already authenticated, no need to verify again
-	if (isAuthenticated.value) {
+export default defineNuxtRouteMiddleware(async (to) => {
+	const { ensureSession } = useAuth();
+
+	if (await ensureSession()) {
 		return;
 	}
 
-	if (check()) {
-		return;
-	}
-
-	const { error } = await verify();
-
-	if (error) {
-		return navigateTo("/login");
-	}
+	return navigateTo(loginUrlFor(to.fullPath), { replace: true });
 });

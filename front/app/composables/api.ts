@@ -30,10 +30,23 @@ function wrapFetch(fetch: $Fetch) {
 	};
 }
 
+// Endpoints reachable without a session: a 401 there is a business error
+// (wrong password, expired reset link), not an expired session, so it must not
+// trigger a sign-out.
+const PUBLIC_PATHS = new Set(["auth", "forgot-password", "reset-password"]);
+
+const isPublicPath = (request: NitroFetchRequest) => {
+	// Routes are built with and without a leading slash across useApiRoutes.
+	// Compare the first segment so "authors" never matches "auth".
+	const [segment = ""] = String(request).replace(/^\//, "").split(/[/?]/);
+
+	return PUBLIC_PATHS.has(segment);
+};
+
 export const useApi = () => {
 	const config = useRuntimeConfig();
 
-	const { token } = useAuth();
+	const { token, signOut } = useAuth();
 
 	let baseApiUrl = import.meta.client
 		? config.public.apiBaseURL
@@ -44,7 +57,23 @@ export const useApi = () => {
 			headers: {
 				"Content-Type": "application/json",
 				Accept: "application/ld+json",
-				authorization: `Bearer ${token.value}`,
+			},
+			// Read the token per request: the instance outlives sign-in/sign-out.
+			onRequest({ options }) {
+				if (token.value) {
+					options.headers.set("authorization", `Bearer ${token.value}`);
+				} else {
+					options.headers.delete("authorization");
+				}
+			},
+			// A token that expires while the SPA is open surfaces here, not in
+			// route middleware. signOut() navigates through the router, so it does
+			// not need a Nuxt context of its own.
+			async onResponseError({ request, response }) {
+				if (!import.meta.client) return;
+				if (response.status !== 401 || isPublicPath(request)) return;
+
+				await signOut(window.location.pathname + window.location.search);
 			},
 		}),
 	);
@@ -172,6 +201,12 @@ export const useApiRoutes = () => {
 			get: get<ChargeType>(),
 			getCollection: getCollection<ChargeType>(),
 		})),
+		password: {
+			forgotPassword: (email: string) =>
+				api("/forgot-password", { method: "POST", body: { email } }),
+			resetPassword: (token: string, password: string) =>
+				api("/reset-password", { method: "POST", body: { token, password } }),
+		},
 	};
 };
 

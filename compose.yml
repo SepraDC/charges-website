@@ -7,15 +7,19 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+      - mailpit
     environment:
       HOST: ${HOST}
       SERVER_NAME: api.${HOST:-localhost}, http://php:80
       FRANKENPHP_WORKER_CONFIG: watch
-      XDEBUG_MODE: "${XDEBUG_MODE:-off}"
-      APP_ENV: "${APP_ENV:-dev}"
+      XDEBUG_MODE: '${XDEBUG_MODE:-off}'
+      APP_ENV: '${APP_ENV:-dev}'
       # Run "composer require symfony/orm-pack" to install and configure Doctrine ORM
       DATABASE_URL: ${DATABASE_URL}
-      CADDY_GLOBAL_OPTIONS: ""
+      CADDY_GLOBAL_OPTIONS: ''
+      MAILER_DSN: '${MAILER_DSN:-smtp://mailpit:1025}'
+      MAILER_FROM: 'noreply@sepradc.ovh'
+      FRONTEND_URL: 'https://${HOST}'
     extra_hosts:
       - host.docker.internal:host-gateway
     tty: false
@@ -60,6 +64,15 @@ services:
       NUXT_PUBLIC_API_BASE_URL: ${NUXT_PUBLIC_API_BASE_URL}
     volumes:
       - ./front:/srv/app
+      # Volume anonyme : garde le node_modules de l'image, non masqué par le bind mount
+      - /srv/app/node_modules
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - '8025:8025'
+      - '1025:1025'
 
 volumes:
   mysql_database:

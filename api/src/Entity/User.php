@@ -26,6 +26,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 ]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_USERNAME', fields: ['username'])]
+#[ORM\Index(columns: ['reset_password_token'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -55,6 +56,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     private ?string $plainPassword;
+
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $email = null;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $resetPasswordToken = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $resetPasswordTokenExpiresAt = null;
 
     public function getId(): ?int
     {
@@ -162,6 +172,41 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->plainPassword;
     }
 
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): static
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    public function getResetPasswordToken(): ?string
+    {
+        return $this->resetPasswordToken;
+    }
+
+    public function setResetPasswordToken(?string $resetPasswordToken): static
+    {
+        $this->resetPasswordToken = $resetPasswordToken;
+
+        return $this;
+    }
+
+    public function getResetPasswordTokenExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->resetPasswordTokenExpiresAt;
+    }
+
+    public function setResetPasswordTokenExpiresAt(?\DateTimeImmutable $resetPasswordTokenExpiresAt): static
+    {
+        $this->resetPasswordTokenExpiresAt = $resetPasswordTokenExpiresAt;
+
+        return $this;
+    }
 
     /**
      * Ensure the session doesn't contain actual password hashes by CRC32C-hashing them, as supported since Symfony 7.3.

@@ -1,30 +1,48 @@
 import type { User } from "../@type/User";
+import { LOGIN_PATH, loginUrlFor } from "../utils/redirect";
+
+const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days in seconds
+const REMEMBER_ME_MAX_AGE = 60 * 60 * 24 * 30; // 30 days in seconds
+
+// Module scope on purpose: parallel 401s must not each start a navigation.
+let signOutInFlight = false;
 
 export const useAuth = () => {
 	const authUser = useState<User | null>("authUser", () => null);
 	const isAuthenticated = useState<boolean>("isAuthenticated", () => false);
-	const token = useCookie<string | null>("authToken", {
+
+	const tokenCookieOptions = {
 		default: () => null,
-		maxAge: 60 * 60 * 24 * 7, // 7 days
-		secure: true,
-		sameSite: "strict",
+		// A Secure cookie is dropped by the browser over plain HTTP, which would
+		// make the login loop back forever in a local HTTP dev environment.
+		secure: !import.meta.client || window.location.protocol === "https:",
+		sameSite: "strict" as const,
 		httpOnly: false, // Must be false for client-side access
+	};
+
+	// Two refs over the same cookie: the lifetime is chosen when we write it.
+	const token = useCookie<string | null>("authToken", {
+		...tokenCookieOptions,
+		maxAge: SESSION_MAX_AGE,
+	});
+	const rememberedToken = useCookie<string | null>("authToken", {
+		...tokenCookieOptions,
+		maxAge: REMEMBER_ME_MAX_AGE,
 	});
 
 	const config = useRuntimeConfig();
+	const router = useRouter();
 
-	// Clear auth state without navigation
 	const clearAuthState = () => {
 		token.value = null;
 		authUser.value = null;
 		isAuthenticated.value = false;
 	};
 
-	// Verify user with token
 	const verify = async () => {
 		if (!token.value) {
 			clearAuthState();
-			return { data: null, error: null };
+			return { data: null, error: "No token" };
 		}
 
 		try {
@@ -40,22 +58,20 @@ export const useAuth = () => {
 				isAuthenticated.value = true;
 				return { data, error: null };
 			} else {
-				// Token is invalid, clear auth state
 				clearAuthState();
 				return { data: null, error: "No data received" };
 			}
 		} catch (err) {
-			// Token is invalid, clear auth state
 			clearAuthState();
 			return { data: null, error: err };
 		}
 	};
 
-	// Sign in user
 	const signIn = async (
 		credentials: {
 			username: string;
 			password: string;
+			remember_me?: boolean;
 		},
 		options?: { callbackUrl?: string },
 	) => {
@@ -69,10 +85,18 @@ export const useAuth = () => {
 			);
 
 			if (data?.token) {
-				token.value = data.token;
-				await verify(); // Verify and set user data
+				if (credentials.remember_me) {
+					rememberedToken.value = data.token;
+				} else {
+					token.value = data.token;
+				}
 
-				const router = useRouter();
+				const { error } = await verify();
+
+				if (error) {
+					return { data: null, error };
+				}
+
 				await router.push(options?.callbackUrl || "/");
 
 				return { data, error: null };
@@ -84,19 +108,42 @@ export const useAuth = () => {
 		}
 	};
 
-	// Sign out user
-	const signOut = async () => {
+	/**
+	 * Drop the session and send the user to login. `returnTo` is the page they
+	 * were on, so they land back on it after signing in again; it is sanitized,
+	 * which also makes this safe to bind straight to a DOM event.
+	 */
+	const signOut = async (returnTo?: unknown) => {
 		clearAuthState();
 
-		await navigateTo("/login");
+		if (signOutInFlight || router.currentRoute.value.path === LOGIN_PATH) {
+			return;
+		}
+
+		signOutInFlight = true;
+		try {
+			await router.replace(loginUrlFor(returnTo));
+		} finally {
+			signOutInFlight = false;
+		}
 	};
 
+	/** True only when the session is fully hydrated, so verify() can be skipped. */
 	const check = () => {
-		return isAuthenticated.value && !authUser.value;
+		return isAuthenticated.value && authUser.value !== null;
+	};
+
+	/** Resolve the session with at most one API call. Used by both middlewares. */
+	const ensureSession = async () => {
+		if (check()) return true;
+		if (!token.value) return false;
+
+		const { error } = await verify();
+
+		return !error;
 	};
 
 	return {
-		// State
 		authUser: readonly(authUser),
 		isAuthenticated: readonly(isAuthenticated),
 		token: readonly(token),
@@ -104,5 +151,6 @@ export const useAuth = () => {
 		signOut,
 		verify,
 		check,
+		ensureSession,
 	};
 };

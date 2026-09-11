@@ -152,6 +152,13 @@ definePageMeta({
 	middleware: ["auth"],
 });
 
+useSeoMeta({
+	title: "Prélèvements – suivi personnel de charges mensuelles",
+	description:
+		"Suivi personnel de prélèvements et charges mensuelles. Service indépendant, sans lien avec une banque : aucune donnée bancaire, montants saisis à la main.",
+	robots: "index, follow, max-snippet:-1",
+});
+
 const { authUser, signOut } = useAuth();
 const api = useApiRoutes();
 const displayList = ref(true);

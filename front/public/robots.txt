@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /$
+Disallow: /login
+Disallow: /forgot-password
+Disallow: /reset-password
+
+Sitemap: https://prel.sepradc.ovh/sitemap.xml
