@@ -55,6 +55,12 @@ export default defineNuxtConfig({
             link: [
                 { rel: "canonical", href: siteUrl },
                 { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
+                { rel: "icon", type: "image/svg+xml", href: "/icon.svg" },
+                {
+                    rel: "apple-touch-icon",
+                    sizes: "180x180",
+                    href: "/apple-touch-icon-180x180.png",
+                },
             ],
         },
     },
@@ -86,6 +92,22 @@ export default defineNuxtConfig({
             display: "standalone",
             background_color: "#ffffff",
             theme_color: "#3b82f6",
+            icons: [
+                { src: "/pwa-64x64.png", sizes: "64x64", type: "image/png" },
+                { src: "/pwa-192x192.png", sizes: "192x192", type: "image/png" },
+                {
+                    src: "/pwa-512x512.png",
+                    sizes: "512x512",
+                    type: "image/png",
+                    purpose: "any",
+                },
+                {
+                    src: "/maskable-icon-512x512.png",
+                    sizes: "512x512",
+                    type: "image/png",
+                    purpose: "maskable",
+                },
+            ],
         },
     },
 });
