@@ -116,6 +116,29 @@ make front ## enter front container
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
+
+<!-- DEPLOYMENT -->
+## Deployment
+
+1. Build and push the images: `./build-and-push.sh`
+2. On the server, create `.env.secrets` in the deploy directory from [`.env.secrets.dist`](.env.secrets.dist).
+   `APP_SECRET` and `JWT_PASSPHRASE` are mandatory: compose and the api entrypoint refuse to start without them, or with the public defaults from `api/.env`.
+3. Deploy: `./deploy.sh`
+
+The JWT keypair is never shipped in the image. It is generated on first start with `JWT_PASSPHRASE` and persisted in the `jwt_keys` volume.
+
+### Rotating secrets
+
+If a secret leaks (or the JWT key was ever shipped in an image):
+
+1. Set new `APP_SECRET` and `JWT_PASSPHRASE` values in `.env.secrets` (`openssl rand -hex 32`)
+2. Drop the keypair so a new one is generated: `docker compose -f compose-prod.yml down && docker volume rm <project>_jwt_keys`
+3. Redeploy with `./deploy.sh`. Every user is logged out, since existing JWTs and remember-me cookies become invalid.
+4. Delete the leaked images from the registry and run its garbage collector.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
 <!-- LICENSE -->
 ## License
 

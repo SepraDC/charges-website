@@ -2,6 +2,18 @@
 set -e
 
 if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
+	# The defaults committed in .env are public: refuse to run prod with them (or without a value)
+	if [ "$APP_ENV" = 'prod' ]; then
+		for var in APP_SECRET JWT_PASSPHRASE; do
+			eval "value=\${$var:-}"
+			if [ -z "$value" ] || [ "$value" = "$(grep "^$var=" .env | cut -d= -f2-)" ]; then
+				echo "$var must be set to a non-default value in production (see .env.secrets.dist)" >&2
+				exit 1
+			fi
+		done
+	fi
+
+	# autoload_runtime.php is only written once composer install completes: a partial vendor/ triggers a reinstall
 	if [ ! -f vendor/autoload_runtime.php ]; then
 		composer install --prefer-dist --no-progress --no-interaction
 	fi
