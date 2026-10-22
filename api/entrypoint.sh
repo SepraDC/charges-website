@@ -2,13 +2,16 @@
 set -e
 
 if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
-	if [ -z "$(ls -A 'vendor/' 2>/dev/null)" ]; then
+	if [ ! -f vendor/autoload_runtime.php ]; then
 		composer install --prefer-dist --no-progress --no-interaction
 	fi
 
 	# Display information about the current project
 	# Or about an error in project initialization
 	php bin/console -V
+
+	# JWT keys are never shipped in the image: generate them on first start (persisted in config/jwt)
+	php bin/console lexik:jwt:generate-keypair --skip-if-exists
 
 	if grep -q ^DATABASE_URL= .env; then
 		echo 'Waiting for database to be ready...'
