@@ -1,4 +1,4 @@
-FROM dunglas/frankenphp:1-php8.4-alpine AS frankenphp_upstream
+FROM dunglas/frankenphp:1.13.2-php8.4.27-alpine AS frankenphp_upstream
 
 # The different stages of this Dockerfile are meant to be built into separate images
 # https://docs.docker.com/develop/develop-images/multistage-build/#stop-at-a-specific-build-stage

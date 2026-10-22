@@ -5,10 +5,6 @@ set -e
 REGISTRY="registry.sepradc.ovh"
 PROJECT="charge"
 
-# Check if logged in to registry
-echo "🔐 Login to registry..."
-docker login $REGISTRY
-
 # Build et push API
 echo "🏗️  Building API for ARM64..."
 docker buildx build \
