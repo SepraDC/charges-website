@@ -24,14 +24,14 @@ up: ## Start project
 	docker compose cp api:/data/caddy/pki/authorities/local/root.crt .
 
 up-prod: ## Start prod project
-	docker compose -f docker compose-prod.yml up -d --build
+	docker compose -f compose-prod.yml up -d --build
 
 down: ## Stop project
 	docker compose down --remove-orphans
 
 .PHONY: db
 db-dump: ## Dump database schema
-	docker compose exec db /usr/bin/mysqldump -u root -p charges-website
+	docker compose exec db mariadb-dump -u root -p charges-website
 
 .PHONY: api
 api: ## Enter php container

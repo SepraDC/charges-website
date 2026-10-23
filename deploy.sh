@@ -8,6 +8,10 @@ REMOTE_DIR="/var/www/charges-website"
 PROD_HOST="prel.sepradc.ovh"
 HTTPS_PORT="1443"  # Port utilisé par Traefik (avec sslh)
 
+# Sans ces variables la prod ne démarre pas (ou démarre avec des secrets publics).
+# Elles vivent uniquement sur le serveur, dans .env ou .env.secrets : ce script ne les écrit jamais.
+REQUIRED_VARS="HOST APP_SECRET JWT_PASSPHRASE DATABASE_URL MYSQL_ROOT_PASSWORD MYSQL_PASSWORD"
+
 echo "📦 Deploying to production..."
 
 # Copy files to server
@@ -16,26 +20,27 @@ rsync -avz --exclude 'node_modules' --exclude '.git' --exclude '.env' \
   compose-prod.yml \
   $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/
 
-# Create/update .env on server
-echo "📝 Creating production .env..."
-ssh $REMOTE_USER@$REMOTE_HOST "cat > $REMOTE_DIR/.env << 'EOF'
-HOST=$PROD_HOST
-APP_ENV=prod
+# Check the production .env on server
+echo "🔐 Checking production .env..."
+ssh $REMOTE_USER@$REMOTE_HOST "cd $REMOTE_DIR && missing='' && \
+  for var in $REQUIRED_VARS; do \
+    grep -Eqs \"^\$var=.+\" .env .env.secrets || missing=\"\$missing \$var\"; \
+  done; \
+  if [ -n \"\$missing\" ]; then \
+    echo \"❌ Missing in $REMOTE_DIR/.env:\$missing\" >&2; \
+    echo \"   Generate secrets with: openssl rand -hex 32\" >&2; \
+    exit 1; \
+  fi"
 
-# Database
-DATABASE_URL=\${DATABASE_URL:-mysql://charges:password@db:3306/charges}
-MYSQL_DATABASE=\${MYSQL_DATABASE:-charges}
-MYSQL_USER=\${MYSQL_USER:-charges}
-MYSQL_PASSWORD=\${MYSQL_PASSWORD:-password}
-MYSQL_ROOT_PASSWORD=\${MYSQL_ROOT_PASSWORD:-rootpassword}
-
-# Nuxt
-NUXT_PUBLIC_API_BASE_URL=https://$PROD_HOST/api
-
-# Timezone
-TZ=Europe/Paris
-EOF
-"
+# The api container runs Doctrine migrations on start: dump the database first
+echo "💾 Backing up database..."
+ssh $REMOTE_USER@$REMOTE_HOST "cd $REMOTE_DIR && mkdir -p ~/backups && \
+  if [ -n \"\$(docker compose -f compose-prod.yml ps -q db)\" ]; then \
+    docker compose -f compose-prod.yml exec -T db sh -c 'mariadb-dump -u root -p\"\$MYSQL_ROOT_PASSWORD\" --databases \"\$MYSQL_DATABASE\" --single-transaction --triggers' \
+      > ~/backups/charges-website-\$(date +%F-%H%M).sql; \
+  else \
+    echo '   db not running, skipping backup'; \
+  fi"
 
 # Execute deployment on remote server
 echo "🚀 Starting containers on remote server..."
