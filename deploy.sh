@@ -7,6 +7,7 @@ REMOTE_USER="ubuntu"
 REMOTE_DIR="/var/www/charges-website"
 PROD_HOST="prel.sepradc.ovh"
 HTTPS_PORT="1443"  # Port utilisé par Traefik (avec sslh)
+REGISTRY="registry.sepradc.ovh"
 
 # Sans ces variables la prod ne démarre pas (ou démarre avec des secrets publics).
 # Elles vivent uniquement sur le serveur, dans .env ou .env.secrets : ce script ne les écrit jamais.
@@ -21,7 +22,7 @@ rsync -avz --exclude 'node_modules' --exclude '.git' --exclude '.env' \
   $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/
 
 # Check the production .env on server
-echo "🔐 Checking production .env..."
+echo "🔐 Checking production .env and registry login..."
 ssh $REMOTE_USER@$REMOTE_HOST "cd $REMOTE_DIR && missing='' && \
   for var in $REQUIRED_VARS; do \
     grep -Eqs \"^\$var=.+\" .env .env.secrets || missing=\"\$missing \$var\"; \
@@ -29,6 +30,10 @@ ssh $REMOTE_USER@$REMOTE_HOST "cd $REMOTE_DIR && missing='' && \
   if [ -n \"\$missing\" ]; then \
     echo \"❌ Missing in $REMOTE_DIR/.env:\$missing\" >&2; \
     echo \"   Generate secrets with: openssl rand -hex 32\" >&2; \
+    exit 1; \
+  fi; \
+  if ! grep -qs '\"$REGISTRY\"' ~/.docker/config.json; then \
+    echo \"❌ Server is not logged in to $REGISTRY, run on it: docker login $REGISTRY\" >&2; \
     exit 1; \
   fi"
 
