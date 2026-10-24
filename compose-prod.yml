@@ -2,9 +2,13 @@ services:
     api:
         image: registry.sepradc.ovh/charge/api:arm64
         platform: linux/arm64
+        # Portainer CE n'a pas l'option « Re-pull image » : chaque redéploiement retélécharge le tag :arm64
+        pull_policy: always
         restart: unless-stopped
         depends_on:
-            - db
+            # L'entrypoint abandonne si la base refuse la connexion (ex. pendant un mariadb-upgrade)
+            db:
+                condition: service_healthy
         volumes:
           - caddy_data:/data
           - caddy_config:/config
@@ -12,8 +16,8 @@ services:
           - bank_images:/app/public/images/banks
         environment:
             HOST: ${HOST}
-            APP_SECRET: ${APP_SECRET:?APP_SECRET must be set in .env.secrets}
-            JWT_PASSPHRASE: ${JWT_PASSPHRASE:?JWT_PASSPHRASE must be set in .env.secrets}
+            APP_SECRET: ${APP_SECRET:?APP_SECRET must be set in the Portainer stack environment}
+            JWT_PASSPHRASE: ${JWT_PASSPHRASE:?JWT_PASSPHRASE must be set in the Portainer stack environment}
             SERVER_NAME: ":80"
             CADDY_GLOBAL_OPTIONS: |
               auto_https off
@@ -77,11 +81,16 @@ services:
             interval: 30s
             timeout: 10s
             retries: 3
+            # Contrôle toutes les 5 s au démarrage : l'api attend que la base soit healthy
+            start_period: 60s
+            start_interval: 5s
         networks:
             sepradcnetwork:
     front:
         image: registry.sepradc.ovh/charge/front:arm64
         platform: linux/arm64
+        # Portainer CE n'a pas l'option « Re-pull image » : chaque redéploiement retélécharge le tag :arm64
+        pull_policy: always
         restart: unless-stopped
         environment:
             NUXT_PUBLIC_API_BASE_URL: "https://${HOST}/api"

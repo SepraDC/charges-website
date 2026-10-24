@@ -35,3 +35,15 @@ echo ""
 echo "API:   $REGISTRY/$PROJECT/api:arm64"
 echo "Front: $REGISTRY/$PROJECT/front:arm64"
 
+# Redéploiement via le webhook de la stack Portainer (joignable depuis le réseau local ou le VPN).
+# L'URL n'est pas commitée : PORTAINER_WEBHOOK_URL ou fichier .portainer-webhook à la racine du dépôt.
+WEBHOOK_URL="${PORTAINER_WEBHOOK_URL:-$(cat .portainer-webhook 2>/dev/null || true)}"
+echo ""
+if [ -n "$WEBHOOK_URL" ]; then
+  echo "🚀 Triggering Portainer redeploy..."
+  # -k : Portainer utilise un certificat auto-signé
+  curl -fsSk -X POST "$WEBHOOK_URL" && echo "✅ Redeploy triggered"
+else
+  echo "ℹ️  No Portainer webhook configured: redeploy the stack from Portainer"
+  echo "   (or put the webhook URL in .portainer-webhook)"
+fi
