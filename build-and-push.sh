@@ -5,6 +5,11 @@ set -e
 REGISTRY="registry.sepradc.ovh"
 PROJECT="charge"
 
+# Le registry demande une authentification (htpasswd) : réutilise les identifiants
+# déjà enregistrés, ne demande le mot de passe que la première fois
+echo "🔐 Login to registry..."
+docker login $REGISTRY
+
 # Build et push API
 echo "🏗️  Building API for ARM64..."
 docker buildx build \

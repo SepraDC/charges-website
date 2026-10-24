@@ -9,6 +9,7 @@ services:
           - caddy_data:/data
           - caddy_config:/config
           - jwt_keys:/app/config/jwt
+          - bank_images:/app/public/images/banks
         environment:
             HOST: ${HOST}
             APP_SECRET: ${APP_SECRET:?APP_SECRET must be set in .env.secrets}
@@ -64,13 +65,15 @@ services:
             MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
             MYSQL_PASSWORD: ${MYSQL_PASSWORD:-charges-user}
             TZ: ${TZ:-Europe/Paris}
+            # Lance mariadb-upgrade au démarrage quand le datadir vient d'une version plus ancienne
+            MARIADB_AUTO_UPGRADE: "1"
         volumes:
             - mysql_database:/var/lib/mysql
         # Port 3306 pas exposé publiquement en prod pour la sécurité
         cap_add:
             - SYS_NICE
         healthcheck:
-            test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+            test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]
             interval: 30s
             timeout: 10s
             retries: 3
@@ -116,6 +119,7 @@ volumes:
     caddy_data:
     caddy_config:
     jwt_keys:
+    bank_images:
 
 networks:
     sepradcnetwork:
