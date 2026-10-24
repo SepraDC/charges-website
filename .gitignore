@@ -8,3 +8,4 @@ root.crt
 .serena
 .scratch
 /.env.secrets
+/.portainer-webhook
