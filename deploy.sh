@@ -21,7 +21,6 @@ echo "📝 Creating production .env..."
 ssh $REMOTE_USER@$REMOTE_HOST "cat > $REMOTE_DIR/.env << 'EOF'
 HOST=$PROD_HOST
 APP_ENV=prod
-APP_SECRET=\${APP_SECRET:-change_me_please}
 
 # Database
 DATABASE_URL=\${DATABASE_URL:-mysql://charges:password@db:3306/charges}

@@ -8,8 +8,11 @@ services:
         volumes:
           - caddy_data:/data
           - caddy_config:/config
+          - jwt_keys:/app/config/jwt
         environment:
             HOST: ${HOST}
+            APP_SECRET: ${APP_SECRET:?APP_SECRET must be set in .env.secrets}
+            JWT_PASSPHRASE: ${JWT_PASSPHRASE:?JWT_PASSPHRASE must be set in .env.secrets}
             SERVER_NAME: ":80"
             CADDY_GLOBAL_OPTIONS: |
               auto_https off
@@ -112,6 +115,7 @@ volumes:
     mysql_database:
     caddy_data:
     caddy_config:
+    jwt_keys:
 
 networks:
     sepradcnetwork:
