@@ -120,10 +120,14 @@ make front ## enter front container
 <!-- DEPLOYMENT -->
 ## Deployment
 
-1. Build and push the images: `./build-and-push.sh`
-2. On the server, create `.env.secrets` in the deploy directory from [`.env.secrets.dist`](.env.secrets.dist).
+Production runs as the `charges-website` stack in Portainer, deployed from `compose-prod.yml` on `main`.
+
+1. Set the stack environment variables in Portainer from [`.env.secrets.dist`](.env.secrets.dist).
    `APP_SECRET` and `JWT_PASSPHRASE` are mandatory: compose and the api entrypoint refuse to start without them, or with the public defaults from `api/.env`.
-3. Deploy: `./deploy.sh`
+2. Put the stack webhook URL (Portainer → stack → GitOps updates) in a git-ignored `.portainer-webhook` file at the repo root.
+3. Build, push and redeploy: `./build-and-push.sh`. It triggers the webhook once the images are pushed; Portainer then pulls `main` and the new images.
+
+Changes to `compose-prod.yml` alone are applied with "Pull and redeploy" in Portainer (or by calling the webhook).
 
 The JWT keypair is never shipped in the image. It is generated on first start with `JWT_PASSPHRASE` and persisted in the `jwt_keys` volume.
 
@@ -131,9 +135,9 @@ The JWT keypair is never shipped in the image. It is generated on first start wi
 
 If a secret leaks (or the JWT key was ever shipped in an image):
 
-1. Set new `APP_SECRET` and `JWT_PASSPHRASE` values in `.env.secrets` (`openssl rand -hex 32`)
-2. Drop the keypair so a new one is generated: `docker compose -f compose-prod.yml down && docker volume rm <project>_jwt_keys`
-3. Redeploy with `./deploy.sh`. Every user is logged out, since existing JWTs and remember-me cookies become invalid.
+1. Set new `APP_SECRET` and `JWT_PASSPHRASE` values in the Portainer stack environment (`openssl rand -hex 32`)
+2. Stop the stack in Portainer and drop the keypair so a new one is generated: `docker volume rm charges-website_jwt_keys`
+3. Start the stack again. Every user is logged out, since existing JWTs and remember-me cookies become invalid.
 4. Delete the leaked images from the registry and run its garbage collector.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

@@ -16,8 +16,8 @@ services:
           - bank_images:/app/public/images/banks
         environment:
             HOST: ${HOST}
-            APP_SECRET: ${APP_SECRET:?APP_SECRET must be set in .env.secrets}
-            JWT_PASSPHRASE: ${JWT_PASSPHRASE:?JWT_PASSPHRASE must be set in .env.secrets}
+            APP_SECRET: ${APP_SECRET:?APP_SECRET must be set in the Portainer stack environment}
+            JWT_PASSPHRASE: ${JWT_PASSPHRASE:?JWT_PASSPHRASE must be set in the Portainer stack environment}
             SERVER_NAME: ":80"
             CADDY_GLOBAL_OPTIONS: |
               auto_https off
